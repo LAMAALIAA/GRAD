@@ -221,9 +221,10 @@
   I18N.en.tut_start = 'Start Tour';
   I18N.en.tut_skip = 'Skip';
   I18N.en.tut_next = 'Next';
-  I18N.en.tut_mode_solo = 'Guided Experiments — follow clear steps, with a scientific explanation for every result.';
-  I18N.en.tut_mode_free = 'Free Lab — mix any elements freely and discover new substances on your own.';
-  I18N.en.tut_mode_class = "Class Competition — a teacher sets up a challenge, and students join from their own devices and race to finish.";
+  I18N.en.tut_free_lab = 'This is Virtual Lab — mix any elements freely and discover new substances.';
+  I18N.en.tut_experiments = "Here you'll find guided experiments with step-by-step instructions.";
+  I18N.en.tut_lang = 'Switch between English and Arabic anytime from here.';
+  I18N.en.tut_score = 'Your score and completed experiments are tracked here.';
   I18N.en.tut_before_water = "Now let's make your first discovery together — Water! 💧";
   I18N.en.tut_lets_go = "Let's go!";
   I18N.en.tut_drag_h = 'Drag (or tap) the Hydrogen bottle into the beaker';
@@ -235,9 +236,10 @@
   I18N.ar.tut_start = 'ابدئي الجولة';
   I18N.ar.tut_skip = 'تخطي';
   I18N.ar.tut_next = 'التالي';
-  I18N.ar.tut_mode_solo = 'تجارب موجهة — اتبعي خطوات واضحة، مع شرح علمي لكل نتيجة.';
-  I18N.ar.tut_mode_free = 'اللعب الحر — اخلطي أي عناصر بحرية واكتشفي مواد جديدة بنفسك.';
-  I18N.ar.tut_mode_class = 'منافسة الصف — المعلم ينشئ تحدي، والطلاب ينضمون من أجهزتهم ويتسابقون للإنهاء.';
+  I18N.ar.tut_free_lab = 'هذا اللعب الحر — اخلطي أي عناصر بحرية واكتشفي مواد جديدة.';
+  I18N.ar.tut_experiments = 'هنا بتلقين تجارب موجهة بخطوات واضحة.';
+  I18N.ar.tut_lang = 'بدّلي بين الإنجليزي والعربي من هنا بأي وقت.';
+  I18N.ar.tut_score = 'نقاطك والتجارب المكتملة تُحسب هنا.';
   I18N.ar.tut_before_water = 'الحين خلينا نسوي أول اكتشاف سوا — الماء! 💧';
   I18N.ar.tut_lets_go = 'يلا نبدأ!';
   I18N.ar.tut_drag_h = 'اسحبي (أو اضغطي) زجاجة الهيدروجين وحطيها بالكأس';
@@ -1989,14 +1991,10 @@
       const t = I18N[state.lang];
       return [
         { kind: 'modal', text: t.tut_welcome, button: t.tut_start },
-        // The three real sections, shown on their own picker page — a much
-        // clearer "here are your three options" than scattered header links.
-        {
-          kind: 'highlight', selector: '[data-mode="solo"]', text: t.tut_mode_solo, button: t.tut_next,
-          onEnter: () => showPage('mode-select'),
-        },
-        { kind: 'highlight', selector: '[data-mode="free"]', text: t.tut_mode_free, button: t.tut_next },
-        { kind: 'highlight', selector: '[data-mode="class"]', text: t.tut_mode_class, button: t.tut_next },
+        { kind: 'highlight', selector: '[data-nav="lab"]', text: t.tut_free_lab, button: t.tut_next },
+        { kind: 'highlight', selector: '[data-nav="experiments"]', text: t.tut_experiments, button: t.tut_next },
+        { kind: 'highlight', selector: '#langToggle', text: t.tut_lang, button: t.tut_next },
+        { kind: 'highlight', selector: '#scoreChip', text: t.tut_score, button: t.tut_next },
         {
           kind: 'modal', text: t.tut_before_water, button: t.tut_lets_go,
           onEnter: () => { showFreeMode(); showPage('lab'); },
