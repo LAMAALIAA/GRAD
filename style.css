@@ -1962,6 +1962,49 @@ input.is-hand-hovered {
   .apparatus-selector { justify-content: center; }
   .bench-surface { gap: 20px; min-height: 300px; padding: 22px 12px 18px; }
   .hero, .about-section, .page-heading, .lab-toolbar { padding-left: 16px; padding-right: 16px; }
+
+  /* Mode picker + teacher/student competition pages — none of these had
+     mobile-specific sizing before, so on a narrow phone the generous
+     desktop padding/widths left very little room for actual content. */
+  .mode-select-container,
+  .teacher-setup-container,
+  .student-join-container {
+    padding-left: 16px; padding-right: 16px;
+  }
+  .mode-select-container h1,
+  .teacher-setup-container h1,
+  .student-join-container h1 {
+    font-size: 1.5rem;
+  }
+  .mode-grid { grid-template-columns: 1fr; gap: 16px; }
+  .mode-card { padding: 28px 20px; }
+  .teacher-form, .join-form, .teacher-monitoring {
+    padding: 18px;
+  }
+  .experiments-checklist {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+
+  /* The competition code is the one thing a student must be able to
+     read/type correctly — never let it get cramped against the copy
+     button on a narrow screen. */
+  .code-box {
+    flex-wrap: wrap;
+    padding: 14px;
+  }
+  .code-box code { font-size: 1.4rem; letter-spacing: 1px; }
+
+  /* The leaderboard's fixed-width columns (45 + 120 + 74px = 239px, plus
+     gaps) don't leave enough room for the name on a narrow phone once the
+     surrounding padding is taken into account — shrink the two side
+     columns and let the name keep the rest. */
+  .leaderboard-row {
+    grid-template-columns: 32px 1fr 70px 58px;
+    padding: 10px 8px;
+    gap: 8px;
+  }
+  .leaderboard-progress span:first-child { font-size: 0.75rem; }
+  .leaderboard-status { font-size: 0.8rem; }
 }
 
 @media (max-width: 420px) {
@@ -1971,6 +2014,7 @@ input.is-hand-hovered {
   .beaker { width: 92px; height: 108px; }
   .test-tube { width: 36px; height: 108px; }
   .flask { width: 96px; height: 108px; }
+  .btn-glow { padding: 12px 26px; font-size: 0.92rem; }
 }
 
 
