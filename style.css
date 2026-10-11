@@ -1770,6 +1770,25 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 
 /* Leaderboard */
+.students-heading-row {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 8px 12px;
+}
+.student-count-badge {
+  font-size: 0.85rem; font-weight: 700;
+  color: var(--text-onDark-muted);
+  background: rgba(0, 184, 217, 0.12);
+  border: 1px solid var(--border-glow);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.student-count-badge.is-full {
+  color: #ff9d9d;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .leaderboard {
   background: var(--bg-deep); padding: 20px; border-radius: 8px;
   margin: 20px 0; border: 1px solid var(--border-glow);
