@@ -28,6 +28,13 @@
   // patches below build a message string that includes it.
   const MAX_STUDENTS_PER_COMPETITION = 30;
 
+  // Supported UI languages, in the order the language button cycles through
+  // them (en → ar → fr → en …). Adding another language later means adding
+  // its code here plus an `I18N.<code>` dictionary and a `<code>:` entry on
+  // every CHEMICALS / EXPERIMENTS / FREE_REACTIONS text field.
+  const LANG_CYCLE = ['en', 'ar', 'fr'];
+  const nextLang = (current) => LANG_CYCLE[(LANG_CYCLE.indexOf(current) + 1) % LANG_CYCLE.length];
+
   /* ----------------------------------------------------------------
      1. APP STATE
      One place holding everything that can change at runtime.
@@ -54,156 +61,335 @@
      translate() walks the DOM once and swaps text content.
   ---------------------------------------------------------------- */
   const I18N = {
-    en: {
-      brand: 'ChemLab<em>2D</em>', loading: 'Preparing the lab…',
-      nav_home: 'Home', nav_experiments: 'Experiments', nav_lab: 'Virtual Lab',
-      hero_cta: '⚗️ Enter the Lab',
-      stat_experiments: 'Guided experiments', stat_risk: 'Real-world risk', stat_access: 'Lab access',
-      about_title: 'About the Lab',
-      about_sub: 'ChemLab2D pairs every reaction with the “why” behind it, so experimenting never gets disconnected from understanding.',
-      feat1_title: 'Zero-risk safety', feat1_body: 'Practice hazardous combinations and their warnings without any real danger.',
-      feat2_title: 'Guided explanations', feat2_body: 'Every reaction explains what happened and why, in plain language.',
-      feat3_title: 'Track your progress', feat3_body: 'Earn scores, complete experiments, and watch your progress bar fill up.',
-      feat4_title: 'Bilingual interface', feat4_body: 'Switch instantly between English and Arabic, with full RTL support.',
-      about_eyebrow: 'KEY FEATURES',
-      exp_eyebrow: 'CHOOSE AN EXPERIMENT', exp_title: 'Experiment Selection',
-      exp_sub: 'Pick a guided experiment. Each one drops you straight onto the lab bench.',
-      diff_easy: 'Easy', diff_medium: 'Medium', diff_hard: 'Hard',
-      exp1_name: 'Acid + Base Neutralization', exp1_desc: 'Combine hydrochloric acid and sodium hydroxide and watch the indicator change color.',
-      exp2_name: 'Vinegar + Baking Soda', exp2_desc: 'A classic acid-carbonate reaction that releases carbon dioxide gas bubbles.',
-      exp3_name: 'Copper Sulfate Reaction', exp3_desc: 'Add iron to copper sulfate solution and observe a precipitate form.',
-      exp4_name: 'Elephant Toothpaste', exp4_desc: 'Mix hydrogen peroxide with a catalyst and watch a giant foam erupt.',
-      exp5_name: 'Dry Ice Fog', exp5_desc: 'Drop dry ice into warm water and watch thick white fog billow out.',
-      exp6_name: 'Glowing Luminol', exp6_desc: 'Combine luminol with an oxidizer and watch it glow blue-green.',
-      completed_tag: 'Completed',
-      start_btn: 'Start', back_btn: '← Back', hint_btn: '💡 Hint', reset_btn: '↺ Reset', handtrack_btn: '🖐️ Hand Control',
-      lab_default_title: 'Free Mix', shelf_title: 'Chemicals',
-      label_beaker: 'Beaker', label_testtube: 'Test Tube', label_flask: 'Flask',
-      panel_messages: 'Lab Messages', msg_welcome: 'Drag (or tap) a chemical bottle, then tap a piece of glassware to add it.',
-      panel_score: 'Score & Progress', score_label: 'Score', completed_label: 'Completed',
-      safety_title: '🧪 Lab Safety Instructions',
-      safety1: 'Always add acid to water, never water to acid.',
-      safety2: 'Never mix bleach-type and ammonia-type chemicals.',
-      safety3: "Watch for temperature warnings — step away from exothermic reactions.",
-      safety4: 'Wear goggles and gloves in a real laboratory at all times.',
-      safety5: "This simulator blocks unsafe combinations so you can learn why they're dangerous.",
-      got_it_btn: 'Got it', hint_title: '💡 Hint', hint_default: 'Select an experiment first to get a tailored hint.',
-      close_btn: 'Close', result_default_title: 'Result', try_again_btn: 'Try Again', next_btn: 'Next Experiment',
-      footer_text: 'ChemLab2D — a safe space to think like a chemist.',
-      msg_added: (chem) => `Added ${chem} to the glassware.`,
-      msg_already: 'That chemical is already in there — add a different one to react.',
-      msg_wrong_start: 'Combination result: ',
-      full_note: 'This piece of glassware already has a result — press Reset to try again.',
-      // Class Competition Mode
-      mode_title: 'How do you want to use the Lab?',
-      mode_solo_title: 'Solo Exploration', mode_solo_desc: 'Learn at your own pace',
-      mode_free_title: 'Free Lab', mode_free_desc: 'Mix & discover with AI',
-      mode_class_title: 'Class Competition', mode_class_desc: 'Team challenge with friends',
-      class_mode_title: 'Class Competition Mode',
-      teacher_role: 'Teacher/Leader', teacher_role_desc: 'Create & monitor competition',
-      student_role: 'Student/Participant', student_role_desc: 'Join with code & compete',
-      teacher_title: 'Create a Class Competition',
-      teacher_select_exp: 'Select Experiments:',
-      teacher_create: 'Create Competition',
-      teacher_share_code: 'Share this code with students:',
-      teacher_students: 'Students & Results',
-      teacher_end: 'End Competition',
-      student_title: 'Join a Class Competition',
-      student_enter_code: 'Enter Competition Code:',
-      student_enter_name: 'Your Name:',
-      student_join: 'Join Competition',
-      msg_select_exp: 'Please select at least one experiment',
-      msg_fill_fields: 'Please fill in both fields',
-      msg_invalid_code: 'Invalid competition code',
-      msg_confirm_end: 'End this competition?',
-      // Free Mode
-      free_title: 'Free Chemistry Lab',
-      free_desc: 'Mix any chemicals and discover reactions with AI predictions',
-      free_choose_vessel: 'Choose Your Vessel',
-      free_select_chemicals: 'Select Chemicals (in mL)',
-      free_mix_btn: '🧬 Mix & Discover',
-      free_analyzing: 'Analyzing reaction...',
-      free_history: 'Reaction History',
-      free_no_history: 'No reactions yet',
-    },
-    ar: {
-      brand: 'مختبر<em>الكيمياء</em>', loading: 'جاري تجهيز المختبر…',
-      nav_home: 'الرئيسية', nav_experiments: 'التجارب', nav_lab: 'المختبر الافتراضي',
-      hero_cta: '⚗️ ادخل المختبر',
-      stat_experiments: 'تجارب موجّهة', stat_risk: 'مخاطر واقعية', stat_access: 'إتاحة المختبر',
-      about_title: 'عن المختبر',
-      about_sub: 'يربط مختبر الكيمياء كل تفاعل بسبب حدوثه، حتى لا تنفصل التجربة عن الفهم أبدًا.',
-      feat1_title: 'أمان بلا مخاطر', feat1_body: 'جرّب التركيبات الخطرة وتحذيراتها دون أي خطر حقيقي.',
-      feat2_title: 'تفسيرات موجّهة', feat2_body: 'كل تفاعل يُشرح لك ماذا حدث ولماذا، بلغة بسيطة.',
-      feat3_title: 'تتبّع تقدّمك', feat3_body: 'اجمع النقاط، أكمل التجارب، وشاهد شريط تقدّمك يمتلئ.',
-      feat4_title: 'واجهة ثنائية اللغة', feat4_body: 'بدّل فورًا بين الإنجليزية والعربية مع دعم كامل للاتجاه من اليمين لليسار.',
-      about_eyebrow: 'المميزات الرئيسية',
-      exp_eyebrow: 'اختر تجربة', exp_title: 'اختيار التجربة',
-      exp_sub: 'اختر تجربة موجّهة، وستنتقل مباشرة إلى منضدة المختبر.',
-      diff_easy: 'سهل', diff_medium: 'متوسط', diff_hard: 'صعب',
-      exp1_name: 'تعادل حمض وقاعدة', exp1_desc: 'امزج حمض الهيدروكلوريك مع هيدروكسيد الصوديوم وشاهد تغيّر لون الكاشف.',
-      exp2_name: 'الخل وبيكربونات الصوديوم', exp2_desc: 'تفاعل كلاسيكي بين حمض وكربونات يُطلق فقاعات غاز ثاني أكسيد الكربون.',
-      exp3_name: 'تفاعل كبريتات النحاس', exp3_desc: 'أضف الحديد إلى محلول كبريتات النحاس وشاهد تكوّن راسب.',
-      exp4_name: 'معجون أسنان الفيل', exp4_desc: 'امزج بيروكسيد الهيدروجين مع عامل حفّاز وشاهد رغوة ضخمة تنفجر.',
-      exp5_name: 'ضباب الثلج الجاف', exp5_desc: 'أسقط الثلج الجاف في ماء دافئ وشاهد ضبابًا أبيض كثيفًا يتصاعد.',
-      exp6_name: 'اللومينول المتوهج', exp6_desc: 'امزج اللومينول مع مؤكسد وشاهده يتوهج بلون أزرق مخضر.',
-      completed_tag: 'مكتملة',
-      start_btn: 'ابدأ', back_btn: '→ رجوع', hint_btn: '💡 تلميح', reset_btn: '↺ إعادة ضبط', handtrack_btn: '🖐️ تحكم باليد',
-      lab_default_title: 'مزج حر', shelf_title: 'المواد الكيميائية',
-      label_beaker: 'كأس زجاجي', label_testtube: 'أنبوب اختبار', label_flask: 'دورق',
-      panel_messages: 'رسائل المختبر', msg_welcome: 'اسحب (أو اضغط على) زجاجة مادة كيميائية، ثم اضغط على أداة زجاجية لإضافتها.',
-      panel_score: 'النقاط والتقدّم', score_label: 'النقاط', completed_label: 'المكتمل',
-      safety_title: '🧪 تعليمات السلامة في المختبر',
-      safety1: 'أضف الحمض دائمًا إلى الماء، ولا تفعل العكس أبدًا.',
-      safety2: 'لا تمزج أبدًا مواد كلورية مع مواد أمونيا.',
-      safety3: 'انتبه لتحذيرات الحرارة — ابتعد عن التفاعلات الطاردة للحرارة.',
-      safety4: 'ارتدِ النظارات والقفازات دائمًا في المختبر الحقيقي.',
-      safety5: 'هذا المحاكي يمنع التركيبات غير الآمنة لتتعلم لماذا هي خطرة.',
-      got_it_btn: 'حسنًا', hint_title: '💡 تلميح', hint_default: 'اختر تجربة أولًا للحصول على تلميح مخصص.',
-      close_btn: 'إغلاق', result_default_title: 'النتيجة', try_again_btn: 'حاول مجددًا', next_btn: 'التجربة التالية',
-      footer_text: 'مختبر الكيمياء الافتراضي — مساحة آمنة للتفكير كعالم كيمياء.',
-      msg_added: (chem) => `تمت إضافة ${chem} إلى الأداة الزجاجية.`,
-      msg_already: 'هذه المادة موجودة بالفعل — أضف مادة مختلفة لحدوث تفاعل.',
-      msg_wrong_start: 'نتيجة التركيبة: ',
-      full_note: 'هذه الأداة الزجاجية تحتوي على نتيجة بالفعل — اضغط "إعادة ضبط" للمحاولة مجددًا.',
-      // Class Competition Mode
-      mode_title: 'كيف تريد استخدام المختبر؟',
-      mode_solo_title: 'استكشاف فردي', mode_solo_desc: 'تعلّم بوتيرتك الخاصة',
-      mode_free_title: 'مختبر حر', mode_free_desc: 'اخلط واكتشف مع الذكاء الاصطناعي',
-      mode_class_title: 'مسابقة فصل', mode_class_desc: 'تحدّ مع الأصدقاء',
-      class_mode_title: 'وضع مسابقة الفصل',
-      teacher_role: 'معلم / قائد', teacher_role_desc: 'إنشاء ومراقبة المسابقة',
-      student_role: 'طالب / مشارك', student_role_desc: 'ادخل برمز والمع',
-      teacher_title: 'إنشاء مسابقة فصل',
-      teacher_select_exp: 'اختر التجارب:',
-      teacher_create: 'إنشاء مسابقة',
-      teacher_share_code: 'شارك هذا الرمز مع الطلاب:',
-      teacher_students: 'الطلاب والنتائج',
-      teacher_end: 'إنهاء المسابقة',
-      student_title: 'ادخل مسابقة فصل',
-      student_enter_code: 'أدخل رمز المسابقة:',
-      student_enter_name: 'اسمك:',
-      student_join: 'ادخل المسابقة',
-      msg_select_exp: 'يرجى اختيار تجربة واحدة على الأقل',
-      msg_fill_fields: 'يرجى ملء كلا الحقلين',
-      msg_invalid_code: 'رمز مسابقة غير صحيح',
-      msg_confirm_end: 'إنهاء هذه المسابقة؟',
-      // Free Mode
-      free_title: 'مختبر الكيمياء الحر',
-      free_desc: 'اخلط أي كيميائيات واكتشف التفاعلات مع توقعات الذكاء الاصطناعي',
-      free_choose_vessel: 'اختر الأداة الزجاجية',
-      free_select_chemicals: 'اختر المواد الكيميائية (بالملليتر)',
-      free_mix_btn: '🧬 اخلط واكتشف',
-      free_analyzing: 'تحليل التفاعل...',
-      free_history: 'سجل التفاعلات',
-      free_no_history: 'لا توجد تفاعلات حتى الآن',
-      // Free Mode - Elements & Apparatus
-      select_apparatus: 'اختر الأنبوب:',
-      lab_free_description: 'اخلط العناصر لاكتشاف تفاعلات جديدة!',
-      msg_welcome_free: 'اسحب عنصرًا من الرف واضغط على الأنبوب المختار لإضافته.',
-      msg_free_no_reaction: 'لا يوجد تفاعل — جرّب عناصر مختلفة!',
-    },
-  };
+  "en": {
+    "msg_added": (chem) => `Added ${chem} to the glassware.`,
+    "brand": "ChemLab<em>2D</em>",
+    "loading": "Preparing the lab…",
+    "nav_home": "Home",
+    "nav_experiments": "Experiments",
+    "nav_lab": "Virtual Lab",
+    "hero_cta": "⚗️ Enter the Lab",
+    "stat_experiments": "Guided experiments",
+    "stat_risk": "Real-world risk",
+    "stat_access": "Lab access",
+    "about_title": "About the Lab",
+    "about_sub": "ChemLab2D pairs every reaction with the “why” behind it, so experimenting never gets disconnected from understanding.",
+    "feat1_title": "Zero-risk safety",
+    "feat1_body": "Practice hazardous combinations and their warnings without any real danger.",
+    "feat2_title": "Guided explanations",
+    "feat2_body": "Every reaction explains what happened and why, in plain language.",
+    "feat3_title": "Track your progress",
+    "feat3_body": "Earn scores, complete experiments, and watch your progress bar fill up.",
+    "feat4_title": "Bilingual interface",
+    "feat4_body": "Switch instantly between English and Arabic, with full RTL support.",
+    "about_eyebrow": "KEY FEATURES",
+    "exp_eyebrow": "CHOOSE AN EXPERIMENT",
+    "exp_title": "Experiment Selection",
+    "exp_sub": "Pick a guided experiment. Each one drops you straight onto the lab bench.",
+    "diff_easy": "Easy",
+    "diff_medium": "Medium",
+    "diff_hard": "Hard",
+    "exp1_name": "Acid + Base Neutralization",
+    "exp1_desc": "Combine hydrochloric acid and sodium hydroxide and watch the indicator change color.",
+    "exp2_name": "Vinegar + Baking Soda",
+    "exp2_desc": "A classic acid-carbonate reaction that releases carbon dioxide gas bubbles.",
+    "exp3_name": "Copper Sulfate Reaction",
+    "exp3_desc": "Add iron to copper sulfate solution and observe a precipitate form.",
+    "exp4_name": "Elephant Toothpaste",
+    "exp4_desc": "Mix hydrogen peroxide with a catalyst and watch a giant foam erupt.",
+    "exp5_name": "Dry Ice Fog",
+    "exp5_desc": "Drop dry ice into warm water and watch thick white fog billow out.",
+    "exp6_name": "Glowing Luminol",
+    "exp6_desc": "Combine luminol with an oxidizer and watch it glow blue-green.",
+    "completed_tag": "Completed",
+    "start_btn": "Start",
+    "back_btn": "← Back",
+    "hint_btn": "💡 Hint",
+    "reset_btn": "↺ Reset",
+    "handtrack_btn": "🖐️ Hand Control",
+    "lab_default_title": "Free Mix",
+    "shelf_title": "Chemicals",
+    "label_beaker": "Beaker",
+    "label_testtube": "Test Tube",
+    "label_flask": "Flask",
+    "panel_messages": "Lab Messages",
+    "msg_welcome": "Drag (or tap) a chemical bottle, then tap a piece of glassware to add it.",
+    "panel_score": "Score & Progress",
+    "score_label": "Score",
+    "completed_label": "Completed",
+    "safety_title": "🧪 Lab Safety Instructions",
+    "safety1": "Always add acid to water, never water to acid.",
+    "safety2": "Never mix bleach-type and ammonia-type chemicals.",
+    "safety3": "Watch for temperature warnings — step away from exothermic reactions.",
+    "safety4": "Wear goggles and gloves in a real laboratory at all times.",
+    "safety5": "This simulator blocks unsafe combinations so you can learn why they're dangerous.",
+    "got_it_btn": "Got it",
+    "hint_title": "💡 Hint",
+    "hint_default": "Select an experiment first to get a tailored hint.",
+    "close_btn": "Close",
+    "result_default_title": "Result",
+    "try_again_btn": "Try Again",
+    "next_btn": "Next Experiment",
+    "footer_text": "ChemLab2D — a safe space to think like a chemist.",
+    "msg_already": "That chemical is already in there — add a different one to react.",
+    "msg_wrong_start": "Combination result: ",
+    "full_note": "This piece of glassware already has a result — press Reset to try again.",
+    "mode_title": "How do you want to use the Lab?",
+    "mode_solo_title": "Solo Exploration",
+    "mode_solo_desc": "Learn at your own pace",
+    "mode_free_title": "Free Lab",
+    "mode_free_desc": "Mix & discover with AI",
+    "mode_class_title": "Class Competition",
+    "mode_class_desc": "Team challenge with friends",
+    "class_mode_title": "Class Competition Mode",
+    "teacher_role": "Teacher/Leader",
+    "teacher_role_desc": "Create & monitor competition",
+    "student_role": "Student/Participant",
+    "student_role_desc": "Join with code & compete",
+    "teacher_title": "Create a Class Competition",
+    "teacher_select_exp": "Select Experiments:",
+    "teacher_create": "Create Competition",
+    "teacher_share_code": "Share this code with students:",
+    "teacher_students": "Students & Results",
+    "teacher_end": "End Competition",
+    "student_title": "Join a Class Competition",
+    "student_enter_code": "Enter Competition Code:",
+    "student_enter_name": "Your Name:",
+    "student_join": "Join Competition",
+    "msg_select_exp": "Please select at least one experiment",
+    "msg_fill_fields": "Please fill in both fields",
+    "msg_invalid_code": "Invalid competition code",
+    "msg_confirm_end": "End this competition?",
+    "free_title": "Free Chemistry Lab",
+    "free_desc": "Mix any chemicals and discover reactions with AI predictions",
+    "free_choose_vessel": "Choose Your Vessel",
+    "free_select_chemicals": "Select Chemicals (in mL)",
+    "free_mix_btn": "🧬 Mix & Discover",
+    "free_analyzing": "Analyzing reaction...",
+    "free_history": "Reaction History",
+    "free_no_history": "No reactions yet"
+  },
+  "ar": {
+    "msg_added": (chem) => `تمت إضافة ${chem} إلى الأداة الزجاجية.`,
+    "brand": "مختبر<em>الكيمياء</em>",
+    "loading": "جاري تجهيز المختبر…",
+    "nav_home": "الرئيسية",
+    "nav_experiments": "التجارب",
+    "nav_lab": "المختبر الافتراضي",
+    "hero_cta": "⚗️ ادخل المختبر",
+    "stat_experiments": "تجارب موجّهة",
+    "stat_risk": "مخاطر واقعية",
+    "stat_access": "إتاحة المختبر",
+    "about_title": "عن المختبر",
+    "about_sub": "يربط مختبر الكيمياء كل تفاعل بسبب حدوثه، حتى لا تنفصل التجربة عن الفهم أبدًا.",
+    "feat1_title": "أمان بلا مخاطر",
+    "feat1_body": "جرّب التركيبات الخطرة وتحذيراتها دون أي خطر حقيقي.",
+    "feat2_title": "تفسيرات موجّهة",
+    "feat2_body": "كل تفاعل يُشرح لك ماذا حدث ولماذا، بلغة بسيطة.",
+    "feat3_title": "تتبّع تقدّمك",
+    "feat3_body": "اجمع النقاط، أكمل التجارب، وشاهد شريط تقدّمك يمتلئ.",
+    "feat4_title": "واجهة ثنائية اللغة",
+    "feat4_body": "بدّل فورًا بين الإنجليزية والعربية مع دعم كامل للاتجاه من اليمين لليسار.",
+    "about_eyebrow": "المميزات الرئيسية",
+    "exp_eyebrow": "اختر تجربة",
+    "exp_title": "اختيار التجربة",
+    "exp_sub": "اختر تجربة موجّهة، وستنتقل مباشرة إلى منضدة المختبر.",
+    "diff_easy": "سهل",
+    "diff_medium": "متوسط",
+    "diff_hard": "صعب",
+    "exp1_name": "تعادل حمض وقاعدة",
+    "exp1_desc": "امزج حمض الهيدروكلوريك مع هيدروكسيد الصوديوم وشاهد تغيّر لون الكاشف.",
+    "exp2_name": "الخل وبيكربونات الصوديوم",
+    "exp2_desc": "تفاعل كلاسيكي بين حمض وكربونات يُطلق فقاعات غاز ثاني أكسيد الكربون.",
+    "exp3_name": "تفاعل كبريتات النحاس",
+    "exp3_desc": "أضف الحديد إلى محلول كبريتات النحاس وشاهد تكوّن راسب.",
+    "exp4_name": "معجون أسنان الفيل",
+    "exp4_desc": "امزج بيروكسيد الهيدروجين مع عامل حفّاز وشاهد رغوة ضخمة تنفجر.",
+    "exp5_name": "ضباب الثلج الجاف",
+    "exp5_desc": "أسقط الثلج الجاف في ماء دافئ وشاهد ضبابًا أبيض كثيفًا يتصاعد.",
+    "exp6_name": "اللومينول المتوهج",
+    "exp6_desc": "امزج اللومينول مع مؤكسد وشاهده يتوهج بلون أزرق مخضر.",
+    "completed_tag": "مكتملة",
+    "start_btn": "ابدأ",
+    "back_btn": "→ رجوع",
+    "hint_btn": "💡 تلميح",
+    "reset_btn": "↺ إعادة ضبط",
+    "handtrack_btn": "🖐️ تحكم باليد",
+    "lab_default_title": "مزج حر",
+    "shelf_title": "المواد الكيميائية",
+    "label_beaker": "كأس زجاجي",
+    "label_testtube": "أنبوب اختبار",
+    "label_flask": "دورق",
+    "panel_messages": "رسائل المختبر",
+    "msg_welcome": "اسحب (أو اضغط على) زجاجة مادة كيميائية، ثم اضغط على أداة زجاجية لإضافتها.",
+    "panel_score": "النقاط والتقدّم",
+    "score_label": "النقاط",
+    "completed_label": "المكتمل",
+    "safety_title": "🧪 تعليمات السلامة في المختبر",
+    "safety1": "أضف الحمض دائمًا إلى الماء، ولا تفعل العكس أبدًا.",
+    "safety2": "لا تمزج أبدًا مواد كلورية مع مواد أمونيا.",
+    "safety3": "انتبه لتحذيرات الحرارة — ابتعد عن التفاعلات الطاردة للحرارة.",
+    "safety4": "ارتدِ النظارات والقفازات دائمًا في المختبر الحقيقي.",
+    "safety5": "هذا المحاكي يمنع التركيبات غير الآمنة لتتعلم لماذا هي خطرة.",
+    "got_it_btn": "حسنًا",
+    "hint_title": "💡 تلميح",
+    "hint_default": "اختر تجربة أولًا للحصول على تلميح مخصص.",
+    "close_btn": "إغلاق",
+    "result_default_title": "النتيجة",
+    "try_again_btn": "حاول مجددًا",
+    "next_btn": "التجربة التالية",
+    "footer_text": "مختبر الكيمياء الافتراضي — مساحة آمنة للتفكير كعالم كيمياء.",
+    "msg_already": "هذه المادة موجودة بالفعل — أضف مادة مختلفة لحدوث تفاعل.",
+    "msg_wrong_start": "نتيجة التركيبة: ",
+    "full_note": "هذه الأداة الزجاجية تحتوي على نتيجة بالفعل — اضغط \"إعادة ضبط\" للمحاولة مجددًا.",
+    "mode_title": "كيف تريد استخدام المختبر؟",
+    "mode_solo_title": "استكشاف فردي",
+    "mode_solo_desc": "تعلّم بوتيرتك الخاصة",
+    "mode_free_title": "مختبر حر",
+    "mode_free_desc": "اخلط واكتشف مع الذكاء الاصطناعي",
+    "mode_class_title": "مسابقة فصل",
+    "mode_class_desc": "تحدّ مع الأصدقاء",
+    "class_mode_title": "وضع مسابقة الفصل",
+    "teacher_role": "معلم / قائد",
+    "teacher_role_desc": "إنشاء ومراقبة المسابقة",
+    "student_role": "طالب / مشارك",
+    "student_role_desc": "ادخل برمز والمع",
+    "teacher_title": "إنشاء مسابقة فصل",
+    "teacher_select_exp": "اختر التجارب:",
+    "teacher_create": "إنشاء مسابقة",
+    "teacher_share_code": "شارك هذا الرمز مع الطلاب:",
+    "teacher_students": "الطلاب والنتائج",
+    "teacher_end": "إنهاء المسابقة",
+    "student_title": "ادخل مسابقة فصل",
+    "student_enter_code": "أدخل رمز المسابقة:",
+    "student_enter_name": "اسمك:",
+    "student_join": "ادخل المسابقة",
+    "msg_select_exp": "يرجى اختيار تجربة واحدة على الأقل",
+    "msg_fill_fields": "يرجى ملء كلا الحقلين",
+    "msg_invalid_code": "رمز مسابقة غير صحيح",
+    "msg_confirm_end": "إنهاء هذه المسابقة؟",
+    "free_title": "مختبر الكيمياء الحر",
+    "free_desc": "اخلط أي كيميائيات واكتشف التفاعلات مع توقعات الذكاء الاصطناعي",
+    "free_choose_vessel": "اختر الأداة الزجاجية",
+    "free_select_chemicals": "اختر المواد الكيميائية (بالملليتر)",
+    "free_mix_btn": "🧬 اخلط واكتشف",
+    "free_analyzing": "تحليل التفاعل...",
+    "free_history": "سجل التفاعلات",
+    "free_no_history": "لا توجد تفاعلات حتى الآن",
+    "select_apparatus": "اختر الأنبوب:",
+    "lab_free_description": "اخلط العناصر لاكتشاف تفاعلات جديدة!",
+    "msg_welcome_free": "اسحب عنصرًا من الرف واضغط على الأنبوب المختار لإضافته.",
+    "msg_free_no_reaction": "لا يوجد تفاعل — جرّب عناصر مختلفة!"
+  },
+  "fr": {
+    "msg_added": (chem) => `${chem} ajouté à la verrerie.`,
+    "brand": "ChemLab<em>2D</em>",
+    "loading": "Préparation du labo…",
+    "nav_home": "Accueil",
+    "nav_experiments": "Expériences",
+    "nav_lab": "Labo Virtuel",
+    "hero_cta": "⚗️ Entrer dans le labo",
+    "stat_experiments": "Expériences guidées",
+    "stat_risk": "Risque réel",
+    "stat_access": "Accès au labo",
+    "about_title": "À propos du labo",
+    "about_sub": "ChemLab2D associe chaque réaction à son « pourquoi », pour que l'expérimentation reste toujours liée à la compréhension.",
+    "feat1_title": "Sécurité sans risque",
+    "feat1_body": "Pratique des combinaisons dangereuses et leurs avertissements, sans aucun danger réel.",
+    "feat2_title": "Explications guidées",
+    "feat2_body": "Chaque réaction explique ce qui s'est passé et pourquoi, en langage clair.",
+    "feat3_title": "Suis ta progression",
+    "feat3_body": "Gagne des points, termine des expériences, et regarde ta barre de progression se remplir.",
+    "feat4_title": "Interface bilingue",
+    "feat4_body": "Passe instantanément de l'anglais à l'arabe, avec prise en charge complète du RTL.",
+    "about_eyebrow": "FONCTIONNALITÉS CLÉS",
+    "exp_eyebrow": "CHOISIS UNE EXPÉRIENCE",
+    "exp_title": "Sélection d'expérience",
+    "exp_sub": "Choisis une expérience guidée. Chacune te place directement sur la paillasse du labo.",
+    "diff_easy": "Facile",
+    "diff_medium": "Moyen",
+    "diff_hard": "Difficile",
+    "exp1_name": "Neutralisation acide-base",
+    "exp1_desc": "Combine de l'acide chlorhydrique et de l'hydroxyde de sodium, et observe l'indicateur changer de couleur.",
+    "exp2_name": "Vinaigre + Bicarbonate de soude",
+    "exp2_desc": "Une réaction acide-carbonate classique qui libère des bulles de dioxyde de carbone.",
+    "exp3_name": "Réaction du sulfate de cuivre",
+    "exp3_desc": "Ajoute du fer à une solution de sulfate de cuivre et observe un précipité se former.",
+    "exp4_name": "Dentifrice d'éléphant",
+    "exp4_desc": "Mélange du peroxyde d'hydrogène avec un catalyseur et regarde une mousse géante jaillir.",
+    "exp5_name": "Brouillard de glace carbonique",
+    "exp5_desc": "Dépose de la glace carbonique dans de l'eau tiède et regarde un épais brouillard blanc se répandre.",
+    "exp6_name": "Luminol lumineux",
+    "exp6_desc": "Combine du luminol avec un oxydant et regarde-le briller en bleu-vert.",
+    "completed_tag": "Terminé",
+    "start_btn": "Commencer",
+    "back_btn": "← Retour",
+    "hint_btn": "💡 Indice",
+    "reset_btn": "↺ Réinitialiser",
+    "handtrack_btn": "🖐️ Contrôle par la main",
+    "lab_default_title": "Mélange libre",
+    "shelf_title": "Produits chimiques",
+    "label_beaker": "Bécher",
+    "label_testtube": "Tube à essai",
+    "label_flask": "Fiole",
+    "panel_messages": "Messages du labo",
+    "msg_welcome": "Fais glisser (ou touche) un flacon chimique, puis touche une pièce de verrerie pour l'ajouter.",
+    "panel_score": "Score et progression",
+    "score_label": "Score",
+    "completed_label": "Terminées",
+    "safety_title": "🧪 Consignes de sécurité du labo",
+    "safety1": "Toujours ajouter l'acide à l'eau, jamais l'eau à l'acide.",
+    "safety2": "Ne jamais mélanger des produits de type eau de Javel et de type ammoniaque.",
+    "safety3": "Surveille les avertissements de température — éloigne-toi des réactions exothermiques.",
+    "safety4": "Porte toujours des lunettes et des gants dans un vrai laboratoire.",
+    "safety5": "Ce simulateur bloque les combinaisons dangereuses pour que tu comprennes pourquoi elles le sont.",
+    "got_it_btn": "Compris",
+    "hint_title": "💡 Indice",
+    "hint_default": "Sélectionne d'abord une expérience pour obtenir un indice adapté.",
+    "close_btn": "Fermer",
+    "result_default_title": "Résultat",
+    "try_again_btn": "Réessayer",
+    "next_btn": "Expérience suivante",
+    "footer_text": "ChemLab2D — un espace sûr pour penser comme un chimiste.",
+    "msg_already": "Ce produit chimique est déjà là-dedans — ajoute-en un autre pour réagir.",
+    "msg_wrong_start": "Résultat de la combinaison : ",
+    "full_note": "Cette pièce de verrerie a déjà un résultat — appuie sur Réinitialiser pour réessayer.",
+    "mode_title": "Comment veux-tu utiliser le labo ?",
+    "mode_solo_title": "Exploration en solo",
+    "mode_solo_desc": "Apprends à ton propre rythme",
+    "mode_free_title": "Labo libre",
+    "mode_free_desc": "Mélange et découvre par toi-même",
+    "mode_class_title": "Compétition de classe",
+    "mode_class_desc": "Défi en équipe avec des amis",
+    "class_mode_title": "Mode Compétition de classe",
+    "teacher_role": "Enseignant·e / Animateur·rice",
+    "teacher_role_desc": "Crée et surveille la compétition",
+    "student_role": "Élève / Participant·e",
+    "student_role_desc": "Rejoins avec un code et participe",
+    "teacher_title": "Créer une compétition de classe",
+    "teacher_select_exp": "Sélectionner les expériences :",
+    "teacher_create": "Créer la compétition",
+    "teacher_share_code": "Partage ce code avec les élèves :",
+    "teacher_students": "Élèves et résultats",
+    "teacher_end": "Terminer la compétition",
+    "student_title": "Rejoindre une compétition de classe",
+    "student_enter_code": "Entre le code de la compétition :",
+    "student_enter_name": "Ton nom :",
+    "student_join": "Rejoindre la compétition",
+    "msg_select_exp": "Merci de sélectionner au moins une expérience",
+    "msg_fill_fields": "Merci de remplir les deux champs",
+    "msg_invalid_code": "Code de compétition invalide",
+    "msg_confirm_end": "Terminer cette compétition ?",
+    "free_title": "Labo de chimie libre",
+    "free_desc": "Mélange n'importe quels produits chimiques et découvre des réactions",
+    "free_choose_vessel": "Choisis ton récipient",
+    "free_select_chemicals": "Sélectionne les produits chimiques (en mL)",
+    "free_mix_btn": "🧬 Mélanger et découvrir",
+    "free_analyzing": "Analyse de la réaction…",
+    "free_history": "Historique des réactions",
+    "free_no_history": "Aucune réaction pour l'instant"
+  }
+};
 
   // === TRANSLATE PREVIOUS "en:" ENTRIES TO ADD NEW KEYS ===
   I18N.en.select_apparatus = 'Choose Container:';
@@ -257,13 +443,107 @@
   I18N.en.msg_competition_full = `This competition is full (max ${MAX_STUDENTS_PER_COMPETITION} students)`;
   I18N.ar.msg_competition_full = `المنافسة وصلت للحد الأقصى (${MAX_STUDENTS_PER_COMPETITION} طالب)`;
   I18N.en.msg_free_no_reaction = 'No reaction — try different elements!';
+  I18N.fr.select_apparatus = "Choisis un récipient :";
+  I18N.fr.lab_free_description = "Mélange des éléments pour voir ce qui se passe !";
+  I18N.fr.msg_welcome_free = "Sélectionne un récipient ci-dessus, puis fais glisser des éléments pour mélanger et découvrir des réactions !";
+  I18N.fr.msg_free_no_reaction = "Aucune réaction — essaie d'autres éléments !";
+  I18N.fr.select_container = "Sélectionne un récipient pour ajouter des éléments";
+  I18N.fr.element_info = "Élément : ";
+  I18N.fr.msg_cloud_unavailable = "Impossible de se connecter au serveur — vérifie ta connexion internet et recharge la page.";
+  I18N.fr.tut_welcome = "👋 Bienvenue au Labo de Chimie Virtuel ! Tu veux une visite rapide d'une minute avant de commencer ?";
+  I18N.fr.tut_start = "Démarrer la visite";
+  I18N.fr.tut_skip = "Passer";
+  I18N.fr.tut_next = "Suivant";
+  I18N.fr.tut_mode_solo = "Expériences guidées — suis des étapes claires, avec une explication scientifique pour chaque résultat.";
+  I18N.fr.tut_mode_free = "Labo libre — mélange librement n'importe quels éléments et découvre de nouvelles substances par toi-même.";
+  I18N.fr.tut_mode_class = "Compétition de classe — un·e enseignant·e crée un défi, et les élèves rejoignent depuis leurs propres appareils et s'affrontent pour finir les premiers.";
+  I18N.fr.tut_before_water = "Faisons maintenant notre première découverte ensemble — l'Eau ! 💧";
+  I18N.fr.tut_lets_go = "C'est parti !";
+  I18N.fr.tut_drag_h = "Fais glisser (ou touche) le flacon d'Hydrogène dans le bécher";
+  I18N.fr.tut_drag_o = "Super ! Ajoute maintenant l'Oxygène de la même façon";
+  I18N.fr.tut_done = "🎉 Bravo, tu l'as fait ! C'est comme ça que fonctionne chaque expérience — choisis un récipient, ajoute les bons éléments, et découvre ce qui se passe. Amuse-toi à explorer !";
+  I18N.fr.tut_finish = "Commencer à explorer";
+  I18N.fr.student_count_label = "inscrit(s)";
+  I18N.fr.msg_competition_full = `Cette compétition est complète (max ${MAX_STUDENTS_PER_COMPETITION} élèves)`;
+
+  // Experiment-grid card titles/descriptions and footer credit (previously hardcoded English in index.html)
+  I18N.en.card_starch_iodine_name = "Starch + Iodine";
+  I18N.ar.card_starch_iodine_name = "النشا + اليود";
+  I18N.fr.card_starch_iodine_name = "Amidon + Iode";
+  I18N.en.card_starch_iodine_desc = "Classic blue-black color change test!";
+  I18N.ar.card_starch_iodine_desc = "اختبار تغيّر اللون الكلاسيكي إلى الأزرق-الأسود!";
+  I18N.fr.card_starch_iodine_desc = "Le test classique du changement de couleur bleu-noir !";
+  I18N.en.card_zinc_copper_name = "Zinc + Copper Sulfate";
+  I18N.ar.card_zinc_copper_name = "الزنك + كبريتات النحاس";
+  I18N.fr.card_zinc_copper_name = "Zinc + Sulfate de cuivre";
+  I18N.en.card_zinc_copper_desc = "Watch red copper metal coat the zinc.";
+  I18N.ar.card_zinc_copper_desc = "شاهد معدن النحاس الأحمر يغطي الزنك.";
+  I18N.fr.card_zinc_copper_desc = "Regarde le cuivre rouge recouvrir le zinc.";
+  I18N.en.card_iron_sulfur_name = "Iron + Sulfur";
+  I18N.ar.card_iron_sulfur_name = "الحديد + الكبريت";
+  I18N.fr.card_iron_sulfur_name = "Fer + Soufre";
+  I18N.en.card_iron_sulfur_desc = "Heat iron and sulfur to form black iron sulfide.";
+  I18N.ar.card_iron_sulfur_desc = "سخّن الحديد والكبريت لتكوين كبريتيد الحديد الأسود.";
+  I18N.fr.card_iron_sulfur_desc = "Chauffe le fer et le soufre pour former du sulfure de fer noir.";
+  I18N.en.card_calcium_water_name = "Calcium + Water";
+  I18N.ar.card_calcium_water_name = "الكالسيوم + الماء";
+  I18N.fr.card_calcium_water_name = "Calcium + Eau";
+  I18N.en.card_calcium_water_desc = "Calmer than sodium but still reactive — bubbling hydrogen!";
+  I18N.ar.card_calcium_water_desc = "أهدأ من الصوديوم لكنه ما زال متفاعلاً — فقاعات هيدروجين!";
+  I18N.fr.card_calcium_water_desc = "Plus calme que le sodium mais toujours réactif — de l'hydrogène qui bouillonne !";
+  I18N.en.card_lead_iodide_name = "Lead Nitrate + Iodide";
+  I18N.ar.card_lead_iodide_name = "نترات الرصاص + اليوديد";
+  I18N.fr.card_lead_iodide_name = "Nitrate de plomb + Iodure";
+  I18N.en.card_lead_iodide_desc = "Bright yellow precipitate forms instantly!";
+  I18N.ar.card_lead_iodide_desc = "يتكوّن راسب أصفر ساطع فوراً!";
+  I18N.fr.card_lead_iodide_desc = "Un précipité jaune vif se forme instantanément !";
+  I18N.en.card_manganese_name = "MnO₂ Catalyst";
+  I18N.ar.card_manganese_name = "محفّز MnO₂";
+  I18N.fr.card_manganese_name = "Catalyseur MnO₂";
+  I18N.en.card_manganese_desc = "Vigorous oxygen release with catalyst!";
+  I18N.ar.card_manganese_desc = "انطلاق قوي للأكسجين بوجود المحفّز!";
+  I18N.fr.card_manganese_desc = "Fort dégagement d'oxygène grâce au catalyseur !";
+  I18N.en.card_sodium_water_name = "Sodium + Water";
+  I18N.ar.card_sodium_water_name = "الصوديوم + الماء";
+  I18N.fr.card_sodium_water_name = "Sodium + Eau";
+  I18N.en.card_sodium_water_desc = "Vigorous reaction with flames — alkali metal warfare!";
+  I18N.ar.card_sodium_water_desc = "تفاعل عنيف مع لهب — حرب الفلزات القلوية!";
+  I18N.fr.card_sodium_water_desc = "Réaction violente avec des flammes — la guerre des métaux alcalins !";
+  I18N.en.card_copper_nitric_name = "Copper + Nitric Acid";
+  I18N.ar.card_copper_nitric_name = "النحاس + حمض النيتريك";
+  I18N.fr.card_copper_nitric_name = "Cuivre + Acide nitrique";
+  I18N.en.card_copper_nitric_desc = "Brown nitrogen dioxide gas — toxic fumes!";
+  I18N.ar.card_copper_nitric_desc = "غاز ثاني أكسيد النيتروجين البني — أبخرة سامة!";
+  I18N.fr.card_copper_nitric_desc = "Gaz brun de dioxyde d'azote — fumées toxiques !";
+  I18N.en.card_sugar_sulfuric_name = "Sugar + Sulfuric Acid";
+  I18N.ar.card_sugar_sulfuric_name = "السكر + حمض الكبريتيك";
+  I18N.fr.card_sugar_sulfuric_name = "Sucre + Acide sulfurique";
+  I18N.en.card_sugar_sulfuric_desc = "Dramatic dehydration to pure black carbon!";
+  I18N.ar.card_sugar_sulfuric_desc = "تجفيف مذهل إلى كربون أسود نقي!";
+  I18N.fr.card_sugar_sulfuric_desc = "Déshydratation spectaculaire en carbone noir pur !";
+  I18N.en.card_aluminum_naoh_name = "Aluminum + NaOH";
+  I18N.ar.card_aluminum_naoh_name = "الألومنيوم + NaOH";
+  I18N.fr.card_aluminum_naoh_name = "Aluminium + NaOH";
+  I18N.en.card_aluminum_naoh_desc = "Amphoteric metal reacts with bases!";
+  I18N.ar.card_aluminum_naoh_desc = "فلز أمفوتيري يتفاعل مع القواعد!";
+  I18N.fr.card_aluminum_naoh_desc = "Un métal amphotère qui réagit avec les bases !";
+  I18N.en.footer_dev = "© Developed by";
+  I18N.ar.footer_dev = "© تطوير";
+  I18N.fr.footer_dev = "© Développé par";
+  I18N.en.board_free_sub = "Discover reactions";
+  I18N.ar.board_free_sub = "اكتشف التفاعلات";
+  I18N.fr.board_free_sub = "Découvre des réactions";
+  I18N.en.msg_selected = "Selected: ";
+  I18N.ar.msg_selected = "تم اختيار: ";
+  I18N.fr.msg_selected = "Sélectionné : ";
 
   /** Translate every [data-i18n] element + set <html lang/dir>. */
   function applyTranslations() {
     const dict = I18N[state.lang];
     document.documentElement.lang = state.lang;
     document.documentElement.dir = state.lang === 'ar' ? 'rtl' : 'ltr';
-    document.getElementById('langLabel').textContent = state.lang === 'ar' ? 'EN' : 'AR';
+    // The button shows the language you'll switch TO next in the cycle.
+    document.getElementById('langLabel').textContent = nextLang(state.lang).toUpperCase();
 
     // Change hero image based on language — each image already has its own
     // title baked into the artwork (English / Arabic), so no separate text
@@ -298,298 +578,1071 @@
      Central source of truth — edit here to add/change experiments.
   ---------------------------------------------------------------- */
   const CHEMICALS = {
-    // === PRIMARY ELEMENTS FOR FREE MODE ===
-    hydrogen: {
-      name: { en: 'Hydrogen', ar: 'الهيدروجين' }, formula: 'H', bottleColor: '#60a5fa',
-      short: { en: 'H', ar: 'H' },
-      info: { en: 'Colorless gas — the lightest element. Combines with oxygen to form water.', ar: 'غاز عديم اللون — أخف العناصر. يتحد مع الأكسجين لتكوين الماء.' },
+  "hydrogen": {
+    "name": {
+      "en": "Hydrogen",
+      "ar": "الهيدروجين",
+      "fr": "Hydrogène"
     },
-    oxygen: {
-      name: { en: 'Oxygen', ar: 'الأكسجين' }, formula: 'O', bottleColor: '#34d399',
-      short: { en: 'O', ar: 'O' },
-      info: { en: 'Colorless gas — supports combustion. Essential for water and many compounds.', ar: 'غاز عديم اللون — يدعم الاحتراق. ضروري للماء والعديد من المركبات.' },
+    "formula": "H",
+    "bottleColor": "#60a5fa",
+    "short": {
+      "en": "H",
+      "ar": "H",
+      "fr": "H"
     },
-    carbon: {
-      name: { en: 'Carbon', ar: 'الكربون' }, formula: 'C', bottleColor: '#1f2937',
-      short: { en: 'C', ar: 'C' },
-      info: { en: 'Dark solid — basis of all organic molecules. Forms the backbone of life.', ar: 'مادة صلبة داكنة — أساس جميع الجزيئات العضوية. تشكل عمود الحياة.' },
+    "info": {
+      "en": "Colorless gas — the lightest element. Combines with oxygen to form water.",
+      "ar": "غاز عديم اللون — أخف العناصر. يتحد مع الأكسجين لتكوين الماء.",
+      "fr": "Gaz incolore — l'élément le plus léger. Se combine avec l'oxygène pour former de l'eau."
+    }
+  },
+  "oxygen": {
+    "name": {
+      "en": "Oxygen",
+      "ar": "الأكسجين",
+      "fr": "Oxygène"
     },
-    nitrogen: {
-      name: { en: 'Nitrogen', ar: 'النيتروجين' }, formula: 'N', bottleColor: '#8b5cf6',
-      short: { en: 'N', ar: 'N' },
-      info: { en: 'Colorless gas — makes up 78% of air. Essential for proteins and DNA.', ar: 'غاز عديم اللون — يشكل 78% من الهواء. ضروري للبروتينات والحمض النووي.' },
+    "formula": "O",
+    "bottleColor": "#34d399",
+    "short": {
+      "en": "O",
+      "ar": "O",
+      "fr": "O"
     },
-    sodium: {
-      name: { en: 'Sodium', ar: 'الصوديوم' }, formula: 'Na', bottleColor: '#fbbf24',
-      short: { en: 'Na', ar: 'Na' },
-      info: { en: 'Silver metal — highly reactive, stored in oil. Essential for nerve signals.', ar: 'معدن فضي — نشط جداً، يُخزن في الزيت. ضروري لإشارات الأعصاب.' },
+    "info": {
+      "en": "Colorless gas — supports combustion. Essential for water and many compounds.",
+      "ar": "غاز عديم اللون — يدعم الاحتراق. ضروري للماء والعديد من المركبات.",
+      "fr": "Gaz incolore — entretient la combustion. Essentiel pour l'eau et de nombreux composés."
+    }
+  },
+  "carbon": {
+    "name": {
+      "en": "Carbon",
+      "ar": "الكربون",
+      "fr": "Carbone"
     },
-    chlorine: {
-      name: { en: 'Chlorine', ar: 'الكلور' }, formula: 'Cl', bottleColor: '#f472b6',
-      short: { en: 'Cl', ar: 'Cl' },
-      info: { en: 'Yellow-green toxic gas — used to disinfect water. Forms salts with metals.', ar: 'غاز سام أصفر-أخضر — يُستخدم لتطهير الماء. يكون ملاح مع المعادن.' },
+    "formula": "C",
+    "bottleColor": "#1f2937",
+    "short": {
+      "en": "C",
+      "ar": "C",
+      "fr": "C"
     },
-
-    // === LEGACY CHEMICALS FOR GUIDED EXPERIMENTS (kept for compatibility) ===    // === NEW CHEMICALS FOR 10 EXPERIMENTS ===
-    sulfur: {
-      name: { en: 'Sulfur Powder', ar: 'مسحوق الكبريت' }, formula: 'S', bottleColor: '#eab308',
-      short: { en: 'Non-metal', ar: 'لافلز' },
-      info: { en: 'Yellow sulfur powder — when heated with iron, forms black iron sulfide.', ar: 'مسحوق كبريت أصفر — عند تسخينه مع الحديد، يكوّن كبريتيد الحديد الأسود.' },
+    "info": {
+      "en": "Dark solid — basis of all organic molecules. Forms the backbone of life.",
+      "ar": "مادة صلبة داكنة — أساس جميع الجزيئات العضوية. تشكل عمود الحياة.",
+      "fr": "Solide foncé — base de toutes les molécules organiques. Constitue le squelette de la vie."
+    }
+  },
+  "nitrogen": {
+    "name": {
+      "en": "Nitrogen",
+      "ar": "النيتروجين",
+      "fr": "Azote"
     },
-    zinc: {
-      name: { en: 'Zinc Powder', ar: 'مسحوق الزنك' }, formula: 'Zn', bottleColor: '#c0cfe4',
-      short: { en: 'Metal', ar: 'معدن' },
-      info: { en: 'More reactive than copper — displaces copper from copper sulfate solution.', ar: 'أكثر تفاعلاً من النحاس — يزيح النحاس من محلول كبريتات النحاس.' },
+    "formula": "N",
+    "bottleColor": "#8b5cf6",
+    "short": {
+      "en": "N",
+      "ar": "N",
+      "fr": "N"
     },
-    water: {
-      name: { en: 'Water', ar: 'الماء' }, formula: 'H₂O', bottleColor: '#7dd3fc',
-      short: { en: 'Solvent', ar: 'مذيب' },
-      info: { en: 'Universal solvent — participates in hydrolysis and combustion reactions.', ar: 'المذيب الشامل — يشارك في تفاعلات التحلل المائي والاحتراق.' },
+    "info": {
+      "en": "Colorless gas — makes up 78% of air. Essential for proteins and DNA.",
+      "ar": "غاز عديم اللون — يشكل 78% من الهواء. ضروري للبروتينات والحمض النووي.",
+      "fr": "Gaz incolore — compose 78% de l'air. Essentiel pour les protéines et l'ADN."
+    }
+  },
+  "sodium": {
+    "name": {
+      "en": "Sodium",
+      "ar": "الصوديوم",
+      "fr": "Sodium"
     },
-    calcium: {
-      name: { en: 'Calcium Metal', ar: 'معدن الكالسيوم' }, formula: 'Ca', bottleColor: '#d1d5db',
-      short: { en: 'Alkaline metal', ar: 'معدن قلوي أرضي' },
-      info: { en: 'Less reactive than sodium — reacts slowly with water to form calcium hydroxide and hydrogen gas.', ar: 'أقل تفاعلاً من الصوديوم — يتفاعل ببطء مع الماء لتكوين هيدروكسيد الكالسيوم وغاز الهيدروجين.' },
+    "formula": "Na",
+    "bottleColor": "#fbbf24",
+    "short": {
+      "en": "Na",
+      "ar": "Na",
+      "fr": "Na"
     },
-    copper: {
-      name: { en: 'Copper Metal', ar: 'معدن النحاس' }, formula: 'Cu', bottleColor: '#ea8e4f',
-      short: { en: 'Transition metal', ar: 'معدن انتقالي' },
-      info: { en: 'Dissolves in dilute nitric acid, producing brown NO₂ gas. Doesn\'t react with dilute HCl or H₂SO₄.', ar: 'ينحل في حمض النيتريك المخفف، منتجًا غاز NO₂ بني. لا يتفاعل مع حمض HCl أو H₂SO₄ المخفف.' },
+    "info": {
+      "en": "Silver metal — highly reactive, stored in oil. Essential for nerve signals.",
+      "ar": "معدن فضي — نشط جداً، يُخزن في الزيت. ضروري لإشارات الأعصاب.",
+      "fr": "Métal argenté — très réactif, conservé dans l'huile. Essentiel pour les signaux nerveux."
+    }
+  },
+  "chlorine": {
+    "name": {
+      "en": "Chlorine",
+      "ar": "الكلور",
+      "fr": "Chlore"
     },
-    nitric_acid: {
-      name: { en: 'Nitric Acid', ar: 'حمض النيتريك' }, formula: 'HNO₃', bottleColor: '#fbbf24',
-      short: { en: 'Strong oxidizing acid', ar: 'حمض قوي مؤكسد' },
-      info: { en: 'Powerful oxidizer — reacts with most metals, producing toxic brown NO₂ gas.', ar: 'مؤكسد قوي — يتفاعل مع معظم المعادن، منتجًا غاز NO₂ سام بني.' },
+    "formula": "Cl",
+    "bottleColor": "#f472b6",
+    "short": {
+      "en": "Cl",
+      "ar": "Cl",
+      "fr": "Cl"
     },
-    lead_nitrate: {
-      name: { en: 'Lead Nitrate', ar: 'نترات الرصاص' }, formula: 'Pb(NO₃)₂', bottleColor: '#e5e7eb',
-      short: { en: 'Metal salt', ar: 'ملح معدني' },
-      info: { en: 'Colorless solution — forms bright yellow precipitate with iodide ions.', ar: 'محلول عديم اللون — يكون راسب أصفر ساطع مع أيونات اليوديد.' },
+    "info": {
+      "en": "Yellow-green toxic gas — used to disinfect water. Forms salts with metals.",
+      "ar": "غاز سام أصفر-أخضر — يُستخدم لتطهير الماء. يكون ملاح مع المعادن.",
+      "fr": "Gaz toxique jaune-vert — utilisé pour désinfecter l'eau. Forme des sels avec les métaux."
+    }
+  },
+  "sulfur": {
+    "name": {
+      "en": "Sulfur Powder",
+      "ar": "مسحوق الكبريت",
+      "fr": "Soufre en poudre"
     },
-    sodium_chloride: {
-      name: { en: 'Sodium Chloride', ar: 'كلوريد الصوديوم' }, formula: 'NaCl', bottleColor: '#f3f4f6',
-      short: { en: 'Salt', ar: 'ملح' },
-      info: { en: 'Table salt — doesn\'t form colored precipitates with most metal ions.', ar: 'ملح الطعام — لا يكوّن رواسب ملونة مع معظم أيونات المعادن.' },
+    "formula": "S",
+    "bottleColor": "#eab308",
+    "short": {
+      "en": "Non-metal",
+      "ar": "لافلز",
+      "fr": "Non-métal"
     },
-    starch: {
-      name: { en: 'Starch Solution', ar: 'محلول النشا' }, formula: '(C₆H₁₀O₅)ₙ', bottleColor: '#fef3c7',
-      short: { en: 'Polymer', ar: 'بوليمر' },
-      info: { en: 'Turns deep blue-black with iodine due to the formation of a starch-iodine complex.', ar: 'يتحول إلى أزرق-أسود عميق مع اليود بسبب تكوين معقد النشا-اليود.' },
+    "info": {
+      "en": "Yellow sulfur powder — when heated with iron, forms black iron sulfide.",
+      "ar": "مسحوق كبريت أصفر — عند تسخينه مع الحديد، يكوّن كبريتيد الحديد الأسود.",
+      "fr": "Poudre de soufre jaune — chauffée avec du fer, forme du sulfure de fer noir."
+    }
+  },
+  "zinc": {
+    "name": {
+      "en": "Zinc Powder",
+      "ar": "مسحوق الزنك",
+      "fr": "Zinc en poudre"
     },
-    iodine: {
-      name: { en: 'Iodine', ar: 'اليود' }, formula: 'I₂', bottleColor: '#92400e',
-      short: { en: 'Halogen', ar: 'الهالوجين' },
-      info: { en: 'Forms a striking blue-black complex with starch — a classic test for starch in food.', ar: 'يكوّن معقد أزرق-أسود مميز مع النشا — اختبار كلاسيكي للكشف عن النشا في الغذاء.' },
+    "formula": "Zn",
+    "bottleColor": "#c0cfe4",
+    "short": {
+      "en": "Metal",
+      "ar": "معدن",
+      "fr": "Métal"
     },
-    glucose: {
-      name: { en: 'Glucose Solution', ar: 'محلول الجلوكوز' }, formula: 'C₆H₁₂O₆', bottleColor: '#fcd34d',
-      short: { en: 'Sugar', ar: 'سكر' },
-      info: { en: 'A reducing sugar — doesn\'t turn blue-black with iodine like starch does.', ar: 'سكر مختزل — لا يتحول إلى أزرق-أسود مع اليود مثل النشا.' },
+    "info": {
+      "en": "More reactive than copper — displaces copper from copper sulfate solution.",
+      "ar": "أكثر تفاعلاً من النحاس — يزيح النحاس من محلول كبريتات النحاس.",
+      "fr": "Plus réactif que le cuivre — déplace le cuivre d'une solution de sulfate de cuivre."
+    }
+  },
+  "water": {
+    "name": {
+      "en": "Water",
+      "ar": "الماء",
+      "fr": "Eau"
     },
-    manganese_dioxide: {
-      name: { en: 'Manganese Dioxide', ar: 'ثاني أكسيد المنجنيز' }, formula: 'MnO₂', bottleColor: '#5b5b5b',
-      short: { en: 'Catalyst', ar: 'عامل حفّاز' },
-      info: { en: 'A powerful catalyst — speeds up H₂O₂ decomposition without being consumed.', ar: 'عامل حفّاز قوي — يسرّع تحلل H₂O₂ دون أن يُستهلك.' },
+    "formula": "H₂O",
+    "bottleColor": "#7dd3fc",
+    "short": {
+      "en": "Solvent",
+      "ar": "مذيب",
+      "fr": "Solvant"
     },
-    iron_oxide: {
-      name: { en: 'Iron Oxide Powder', ar: 'مسحوق أكسيد الحديد' }, formula: 'Fe₂O₃/Fe₃O₄', bottleColor: '#7c2d12',
-      short: { en: 'Metal oxide', ar: 'أكسيد معدني' },
-      info: { en: 'Forms when iron reacts with oxygen — rust is a slow, damp version of this. Unlike MnO₂, it doesn\'t effectively catalyze H₂O₂ decomposition.', ar: 'يتكوّن عند تفاعل الحديد مع الأكسجين — الصدأ هو نسخة بطيئة ورطبة من هذا التفاعل. على عكس MnO₂، لا يحفز بفعالية تحلل H₂O₂.' },
+    "info": {
+      "en": "Universal solvent — participates in hydrolysis and combustion reactions.",
+      "ar": "المذيب الشامل — يشارك في تفاعلات التحلل المائي والاحتراق.",
+      "fr": "Solvant universel — intervient dans l'hydrolyse et les réactions de combustion."
+    }
+  },
+  "calcium": {
+    "name": {
+      "en": "Calcium Metal",
+      "ar": "معدن الكالسيوم",
+      "fr": "Calcium métallique"
     },
-    sugar: {
-      name: { en: 'Sugar (Sucrose)', ar: 'السكر (السكروز)' }, formula: 'C₁₂H₂₂O₁₁', bottleColor: '#fef08a',
-      short: { en: 'Organic compound', ar: 'مركب عضوي' },
-      info: { en: 'When dehydrated by conc. H₂SO₄, it blackens into pure carbon — a dramatic exothermic reaction.', ar: 'عند جفافه بـ H₂SO₄ المركز، يتحول إلى كربون نقي أسود — تفاعل طارد حرارة درامي.' },
+    "formula": "Ca",
+    "bottleColor": "#d1d5db",
+    "short": {
+      "en": "Alkaline metal",
+      "ar": "معدن قلوي أرضي",
+      "fr": "Métal alcalino-terreux"
     },
-    sulfuric_acid: {
-      name: { en: 'Sulfuric Acid', ar: 'حمض الكبريتيك' }, formula: 'H₂SO₄', bottleColor: '#fed7aa',
-      short: { en: 'Strong dehydrating acid', ar: 'حمض قوي مجفف' },
-      info: { en: 'A powerful dehydrating agent — removes water from organic compounds, leaving carbon behind.', ar: 'عامل جفاف قوي — يزيل الماء من المركبات العضوية، تاركًا الكربون.' },
+    "info": {
+      "en": "Less reactive than sodium — reacts slowly with water to form calcium hydroxide and hydrogen gas.",
+      "ar": "أقل تفاعلاً من الصوديوم — يتفاعل ببطء مع الماء لتكوين هيدروكسيد الكالسيوم وغاز الهيدروجين.",
+      "fr": "Moins réactif que le sodium — réagit lentement avec l'eau pour former de l'hydroxyde de calcium et de l'hydrogène gazeux."
+    }
+  },
+  "copper": {
+    "name": {
+      "en": "Copper Metal",
+      "ar": "معدن النحاس",
+      "fr": "Cuivre métallique"
     },
-    hydrochloric_acid: {
-      name: { en: 'Hydrochloric Acid', ar: 'حمض الهيدروكلوريك' }, formula: 'HCl', bottleColor: '#fca5a5',
-      short: { en: 'Strong acid', ar: 'حمض قوي' },
-      info: { en: 'A strong acid that ionizes completely in water, formed directly from hydrogen + chlorine gas — reacts with metals, but less dramatically than concentrated HNO₃, and doesn\'t dehydrate sugar.', ar: 'حمض قوي يتأين بالكامل بالماء، ويتكوّن مباشرة من غاز الهيدروجين والكلور — يتفاعل مع المعادن لكن بعنف أقل من HNO₃ المركز، ولا يجفف السكر.' },
+    "formula": "Cu",
+    "bottleColor": "#ea8e4f",
+    "short": {
+      "en": "Transition metal",
+      "ar": "معدن انتقالي",
+      "fr": "Métal de transition"
     },
-    aluminum: {
-      name: { en: 'Aluminum Powder', ar: 'مسحوق الألومنيوم' }, formula: 'Al', bottleColor: '#e5e7eb',
-      short: { en: 'Amphoteric metal', ar: 'معدن برمائي' },
-      info: { en: 'Reacts with both acids AND strong bases — amphoteric. Reacts vigorously with NaOH + water.', ar: 'يتفاعل مع الحمضيات والقواعد القوية — برمائي. يتفاعل بعنف مع NaOH والماء.' },
+    "info": {
+      "en": "Dissolves in dilute nitric acid, producing brown NO₂ gas. Doesn't react with dilute HCl or H₂SO₄.",
+      "ar": "ينحل في حمض النيتريك المخفف، منتجًا غاز NO₂ بني. لا يتفاعل مع حمض HCl أو H₂SO₄ المخفف.",
+      "fr": "Se dissout dans l'acide nitrique dilué, produisant du gaz NO₂ brun. Ne réagit pas avec HCl ou H₂SO₄ dilués."
+    }
+  },
+  "nitric_acid": {
+    "name": {
+      "en": "Nitric Acid",
+      "ar": "حمض النيتريك",
+      "fr": "Acide nitrique"
     },
-
-    // === CHEMICALS FOR 13 EXPERIMENTS ADDED LATER (were missing — broke the Start transition) ===
-    naoh: {
-      name: { en: 'Sodium Hydroxide', ar: 'هيدروكسيد الصوديوم' }, formula: 'NaOH', bottleColor: '#a5f3fc',
-      short: { en: 'Strong base', ar: 'قاعدة قوية' },
-      info: { en: 'A strong base — neutralizes acids and reacts with amphoteric metals like aluminum, releasing hydrogen gas.', ar: 'قاعدة قوية — تعادل الأحماض وتتفاعل مع المعادن البرمائية مثل الألومنيوم، محررة غاز الهيدروجين.' },
+    "formula": "HNO₃",
+    "bottleColor": "#fbbf24",
+    "short": {
+      "en": "Strong oxidizing acid",
+      "ar": "حمض قوي مؤكسد",
+      "fr": "Acide oxydant puissant"
     },
-    copper_sulfate: {
-      name: { en: 'Copper Sulfate Solution', ar: 'محلول كبريتات النحاس' }, formula: 'CuSO₄', bottleColor: '#2563eb',
-      short: { en: 'Metal salt', ar: 'ملح معدني' },
-      info: { en: 'Bright blue solution — more reactive metals such as zinc or iron displace the copper from it.', ar: 'محلول أزرق ساطع — المعادن الأكثر تفاعلاً مثل الزنك أو الحديد تزيح النحاس منه.' },
+    "info": {
+      "en": "Powerful oxidizer — reacts with most metals, producing toxic brown NO₂ gas.",
+      "ar": "مؤكسد قوي — يتفاعل مع معظم المعادن، منتجًا غاز NO₂ سام بني.",
+      "fr": "Oxydant puissant — réagit avec la plupart des métaux, produisant du gaz NO₂ brun toxique."
+    }
+  },
+  "lead_nitrate": {
+    "name": {
+      "en": "Lead Nitrate",
+      "ar": "نترات الرصاص",
+      "fr": "Nitrate de plomb"
     },
-    vinegar: {
-      name: { en: 'Vinegar (Acetic Acid)', ar: 'الخل (حمض الأسيتيك)' }, formula: 'CH₃COOH', bottleColor: '#f0d9a0',
-      short: { en: 'Weak acid', ar: 'حمض ضعيف' },
-      info: { en: 'A weak acid — fizzes with baking soda to release CO₂ gas, but too mild for reactions needing a strong acid or base.', ar: 'حمض ضعيف — يفور مع بيكربونات الصوديوم ليطلق غاز CO₂، لكنه ضعيف جداً للتفاعلات التي تحتاج حمضاً أو قاعدة قوية.' },
+    "formula": "Pb(NO₃)₂",
+    "bottleColor": "#e5e7eb",
+    "short": {
+      "en": "Metal salt",
+      "ar": "ملح معدني",
+      "fr": "Sel métallique"
     },
-    baking_soda: {
-      name: { en: 'Baking Soda Solution', ar: 'محلول بيكربونات الصوديوم' }, formula: 'NaHCO₃', bottleColor: '#f1f5f9',
-      short: { en: 'Mild base', ar: 'قاعدة خفيفة' },
-      info: { en: 'A mild base — reacts with acids like vinegar to release carbon dioxide gas, causing fizzing.', ar: 'قاعدة خفيفة — تتفاعل مع الأحماض مثل الخل لتطلق غاز ثاني أكسيد الكربون، مسببة الفوران.' },
+    "info": {
+      "en": "Colorless solution — forms bright yellow precipitate with iodide ions.",
+      "ar": "محلول عديم اللون — يكون راسب أصفر ساطع مع أيونات اليوديد.",
+      "fr": "Solution incolore — forme un précipité jaune vif avec les ions iodure."
+    }
+  },
+  "sodium_chloride": {
+    "name": {
+      "en": "Sodium Chloride",
+      "ar": "كلوريد الصوديوم",
+      "fr": "Chlorure de sodium"
     },
-    iron: {
-      name: { en: 'Iron Filings', ar: 'برادة الحديد' }, formula: 'Fe', bottleColor: '#52525b',
-      short: { en: 'Metal', ar: 'معدن' },
-      info: { en: 'A reactive metal — displaces copper from copper sulfate solution and combines with sulfur when heated.', ar: 'معدن متفاعل — يزيح النحاس من محلول كبريتات النحاس ويتحد مع الكبريت عند التسخين.' },
+    "formula": "NaCl",
+    "bottleColor": "#f3f4f6",
+    "short": {
+      "en": "Salt",
+      "ar": "ملح",
+      "fr": "Sel"
     },
-    hydrogen_peroxide: {
-      name: { en: 'Hydrogen Peroxide', ar: 'بيروكسيد الهيدروجين' }, formula: 'H₂O₂', bottleColor: '#eff6ff',
-      short: { en: 'Oxidizer', ar: 'مؤكسد' },
-      info: { en: 'Breaks down into water and oxygen gas — rapidly when a catalyst such as MnO₂ or potassium iodide is present.', ar: 'يتحلل إلى ماء وغاز أكسجين — بسرعة عند وجود عامل حفّاز مثل MnO₂ أو يوديد البوتاسيوم.' },
+    "info": {
+      "en": "Table salt — doesn't form colored precipitates with most metal ions.",
+      "ar": "ملح الطعام — لا يكوّن رواسب ملونة مع معظم أيونات المعادن.",
+      "fr": "Sel de table — ne forme pas de précipités colorés avec la plupart des ions métalliques."
+    }
+  },
+  "starch": {
+    "name": {
+      "en": "Starch Solution",
+      "ar": "محلول النشا",
+      "fr": "Solution d'amidon"
     },
-    potassium_iodide: {
-      name: { en: 'Potassium Iodide', ar: 'يوديد البوتاسيوم' }, formula: 'KI', bottleColor: '#fff7cd',
-      short: { en: 'Metal salt', ar: 'ملح معدني' },
-      info: { en: 'Colorless solution — forms a bright yellow precipitate with lead ions and rapidly catalyzes hydrogen peroxide breakdown.', ar: 'محلول عديم اللون — يكوّن راسباً أصفر ساطعاً مع أيونات الرصاص ويحفّز بسرعة تحلل بيروكسيد الهيدروجين.' },
+    "formula": "(C₆H₁₀O₅)ₙ",
+    "bottleColor": "#fef3c7",
+    "short": {
+      "en": "Polymer",
+      "ar": "بوليمر",
+      "fr": "Polymère"
     },
-    dry_ice: {
-      name: { en: 'Dry Ice', ar: 'الثلج الجاف' }, formula: 'CO₂ (solid)', bottleColor: '#f0f9ff',
-      short: { en: 'Solid CO₂', ar: 'ثاني أكسيد الكربون الصلب' },
-      info: { en: 'Frozen carbon dioxide — sublimates straight into gas, and in warm water produces dense, visible white fog.', ar: 'ثاني أكسيد الكربون المجمد — يتسامى مباشرة إلى غاز، وفي الماء الدافئ ينتج ضباباً أبيض كثيفاً ومرئياً.' },
+    "info": {
+      "en": "Turns deep blue-black with iodine due to the formation of a starch-iodine complex.",
+      "ar": "يتحول إلى أزرق-أسود عميق مع اليود بسبب تكوين معقد النشا-اليود.",
+      "fr": "Devient bleu-noir profond avec l'iode grâce à la formation d'un complexe amidon-iode."
+    }
+  },
+  "iodine": {
+    "name": {
+      "en": "Iodine",
+      "ar": "اليود",
+      "fr": "Iode"
     },
-    warm_water: {
-      name: { en: 'Warm Water', ar: 'ماء دافئ' }, formula: 'H₂O (warm)', bottleColor: '#bae6fd',
-      short: { en: 'Solvent', ar: 'مذيب' },
-      info: { en: 'Warm water speeds up the sublimation of dry ice, producing thicker, more visible fog than cold water would.', ar: 'الماء الدافئ يسرّع تسامي الثلج الجاف، منتجاً ضباباً أكثف وأوضح من الماء البارد.' },
+    "formula": "I₂",
+    "bottleColor": "#92400e",
+    "short": {
+      "en": "Halogen",
+      "ar": "الهالوجين",
+      "fr": "Halogène"
     },
-    luminol: {
-      name: { en: 'Luminol', ar: 'اللومينول' }, formula: 'C₈H₇N₃O₂', bottleColor: '#e0e7ff',
-      short: { en: 'Chemiluminescent compound', ar: 'مركب كيميائي مضيء' },
-      info: { en: 'Glows blue-green when oxidized by hydrogen peroxide — the same reaction forensic teams use to detect trace blood.', ar: 'يتوهج بلون أزرق مخضر عند أكسدته ببيروكسيد الهيدروجين — نفس التفاعل الذي تستخدمه الفرق الجنائية للكشف عن آثار الدم.' },
+    "info": {
+      "en": "Forms a striking blue-black complex with starch — a classic test for starch in food.",
+      "ar": "يكوّن معقد أزرق-أسود مميز مع النشا — اختبار كلاسيكي للكشف عن النشا في الغذاء.",
+      "fr": "Forme un complexe bleu-noir saisissant avec l'amidon — un test classique pour détecter l'amidon dans les aliments."
+    }
+  },
+  "glucose": {
+    "name": {
+      "en": "Glucose Solution",
+      "ar": "محلول الجلوكوز",
+      "fr": "Solution de glucose"
     },
-    potassium: {
-      name: { en: 'Potassium Metal', ar: 'معدن البوتاسيوم' }, formula: 'K', bottleColor: '#94a3b8',
-      short: { en: 'Alkali metal', ar: 'معدن قلوي' },
-      info: { en: 'An extremely reactive alkali metal — similar to sodium but reacts even more violently and dangerously with water.', ar: 'معدن قلوي شديد التفاعل — يشبه الصوديوم لكنه يتفاعل بعنف وخطورة أكبر مع الماء.' },
+    "formula": "C₆H₁₂O₆",
+    "bottleColor": "#fcd34d",
+    "short": {
+      "en": "Sugar",
+      "ar": "سكر",
+      "fr": "Sucre"
     },
-
-    // === Compounds a learner can CREATE in Free Lab by mixing raw elements
-    //     (see FREE_REACTIONS `produces`) — they then join the shelf as new,
-    //     fully usable substances. ===
-    ammonia: {
-      name: { en: 'Ammonia', ar: 'الأمونيا' }, formula: 'NH₃', bottleColor: '#ddd6fe',
-      short: { en: 'Made in Free Lab: N + H', ar: 'صُنعت في اللعب الحر: N + H' },
-      info: { en: 'A pungent gas made of nitrogen and hydrogen — used industrially to make fertilizers.', ar: 'غاز نفاذ الرائحة مكوّن من النيتروجين والهيدروجين — يُستخدم صناعياً لصنع الأسمدة.' },
+    "info": {
+      "en": "A reducing sugar — doesn't turn blue-black with iodine like starch does.",
+      "ar": "سكر مختزل — لا يتحول إلى أزرق-أسود مع اليود مثل النشا.",
+      "fr": "Un sucre réducteur — ne devient pas bleu-noir avec l'iode comme le fait l'amidon."
+    }
+  },
+  "manganese_dioxide": {
+    "name": {
+      "en": "Manganese Dioxide",
+      "ar": "ثاني أكسيد المنجنيز",
+      "fr": "Dioxyde de manganèse"
     },
-    carbon_dioxide: {
-      name: { en: 'Carbon Dioxide', ar: 'ثاني أكسيد الكربون' }, formula: 'CO₂', bottleColor: '#cbd5e1',
-      short: { en: 'Made in Free Lab: C + O', ar: 'صُنع في اللعب الحر: C + O' },
-      info: { en: 'The gas you exhale and plants absorb — also what makes soda fizzy.', ar: 'الغاز الذي تزفره وتمتصه النباتات — وهو أيضاً ما يجعل المشروبات الغازية فوّارة.' },
+    "formula": "MnO₂",
+    "bottleColor": "#5b5b5b",
+    "short": {
+      "en": "Catalyst",
+      "ar": "عامل حفّاز",
+      "fr": "Catalyseur"
     },
-    iron_sulfide: {
-      name: { en: 'Iron Sulfide', ar: 'كبريتيد الحديد' }, formula: 'FeS', bottleColor: '#44403c',
-      short: { en: 'Made in Free Lab: Fe + S', ar: 'صُنع في اللعب الحر: Fe + S' },
-      info: { en: 'A dull black solid formed when iron and sulfur combine directly under heat.', ar: 'صلب أسود باهت يتكوّن عند اتحاد الحديد والكبريت مباشرة تحت الحرارة.' },
+    "info": {
+      "en": "A powerful catalyst — speeds up H₂O₂ decomposition without being consumed.",
+      "ar": "عامل حفّاز قوي — يسرّع تحلل H₂O₂ دون أن يُستهلك.",
+      "fr": "Un catalyseur puissant — accélère la décomposition de H₂O₂ sans être consommé."
+    }
+  },
+  "iron_oxide": {
+    "name": {
+      "en": "Iron Oxide Powder",
+      "ar": "مسحوق أكسيد الحديد",
+      "fr": "Oxyde de fer en poudre"
     },
-    potassium_chloride: {
-      name: { en: 'Potassium Chloride', ar: 'كلوريد البوتاسيوم' }, formula: 'KCl', bottleColor: '#f3f4f6',
-      short: { en: 'Made in Free Lab: K + Cl', ar: 'صُنع في اللعب الحر: K + Cl' },
-      info: { en: 'A white salt, chemically similar to table salt — sometimes used as a low-sodium salt substitute.', ar: 'ملح أبيض شبيه كيميائياً بملح الطعام — يُستخدم أحياناً كبديل منخفض الصوديوم.' },
+    "formula": "Fe₂O₃/Fe₃O₄",
+    "bottleColor": "#7c2d12",
+    "short": {
+      "en": "Metal oxide",
+      "ar": "أكسيد معدني",
+      "fr": "Oxyde métallique"
     },
-
-    // === More Free Lab discoveries (expanded combination table) ===
-    methane: {
-      name: { en: 'Methane', ar: 'الميثان' }, formula: 'CH₄', bottleColor: '#bfdbfe',
-      short: { en: 'Made in Free Lab: C + H', ar: 'صُنع في اللعب الحر: C + H' },
-      info: { en: 'The simplest hydrocarbon — the main component of natural gas.', ar: 'أبسط مركب هيدروكربوني — المكوّن الرئيسي للغاز الطبيعي.' },
+    "info": {
+      "en": "Forms when iron reacts with oxygen — rust is a slow, damp version of this. Unlike MnO₂, it doesn't effectively catalyze H₂O₂ decomposition.",
+      "ar": "يتكوّن عند تفاعل الحديد مع الأكسجين — الصدأ هو نسخة بطيئة ورطبة من هذا التفاعل. على عكس MnO₂، لا يحفز بفعالية تحلل H₂O₂.",
+      "fr": "Se forme quand le fer réagit avec l'oxygène — la rouille en est une version lente et humide. Contrairement au MnO₂, il ne catalyse pas efficacement la décomposition de H₂O₂."
+    }
+  },
+  "sugar": {
+    "name": {
+      "en": "Sugar (Sucrose)",
+      "ar": "السكر (السكروز)",
+      "fr": "Sucre (saccharose)"
     },
-    hydrogen_sulfide: {
-      name: { en: 'Hydrogen Sulfide', ar: 'كبريتيد الهيدروجين' }, formula: 'H₂S', bottleColor: '#d9f99d',
-      short: { en: 'Made in Free Lab: H + S', ar: 'صُنع في اللعب الحر: H + S' },
-      info: { en: 'A toxic gas with the unmistakable smell of rotten eggs.', ar: 'غاز سام برائحة البيض الفاسد المميزة.' },
+    "formula": "C₁₂H₂₂O₁₁",
+    "bottleColor": "#fef08a",
+    "short": {
+      "en": "Organic compound",
+      "ar": "مركب عضوي",
+      "fr": "Composé organique"
     },
-    sodium_hydride: {
-      name: { en: 'Sodium Hydride', ar: 'هيدريد الصوديوم' }, formula: 'NaH', bottleColor: '#a1a1aa',
-      short: { en: 'Made in Free Lab: H + Na', ar: 'صُنع في اللعب الحر: H + Na' },
-      info: { en: 'An ionic solid where hydrogen acts as a negative ion (H⁻) — reacts violently with water, releasing H₂ gas.', ar: 'صلب أيوني يتصرف فيه الهيدروجين كأيون سالب (H⁻) — يتفاعل بعنف مع الماء محرراً غاز H₂.' },
+    "info": {
+      "en": "When dehydrated by conc. H₂SO₄, it blackens into pure carbon — a dramatic exothermic reaction.",
+      "ar": "عند جفافه بـ H₂SO₄ المركز، يتحول إلى كربون نقي أسود — تفاعل طارد حرارة درامي.",
+      "fr": "Déshydraté par l'acide sulfurique concentré, il noircit en carbone pur — une réaction exothermique spectaculaire."
+    }
+  },
+  "sulfuric_acid": {
+    "name": {
+      "en": "Sulfuric Acid",
+      "ar": "حمض الكبريتيك",
+      "fr": "Acide sulfurique"
     },
-    hydrogen_iodide: {
-      name: { en: 'Hydrogen Iodide', ar: 'يوديد الهيدروجين' }, formula: 'HI', bottleColor: '#f5d0c5',
-      short: { en: 'Made in Free Lab: H + I', ar: 'صُنع في اللعب الحر: H + I' },
-      info: { en: 'A fuming acidic gas — dissolves in water to form hydroiodic acid, one of the strongest common acids.', ar: 'غاز حمضي متصاعد — يذوب بالماء مكوّناً حمض الهيدرويوديك، أحد أقوى الأحماض الشائعة.' },
+    "formula": "H₂SO₄",
+    "bottleColor": "#fed7aa",
+    "short": {
+      "en": "Strong dehydrating acid",
+      "ar": "حمض قوي مجفف",
+      "fr": "Acide déshydratant puissant"
     },
-    nitrogen_dioxide: {
-      name: { en: 'Nitrogen Dioxide', ar: 'ثاني أكسيد النيتروجين' }, formula: 'NO₂', bottleColor: '#c2410c',
-      short: { en: 'Made in Free Lab: O + N', ar: 'صُنع في اللعب الحر: O + N' },
-      info: { en: 'A reddish-brown toxic gas — a major component of smog and acid rain.', ar: 'غاز سام بني محمر — من المكوّنات الرئيسية للضباب الدخاني والمطر الحمضي.' },
+    "info": {
+      "en": "A powerful dehydrating agent — removes water from organic compounds, leaving carbon behind.",
+      "ar": "عامل جفاف قوي — يزيل الماء من المركبات العضوية، تاركًا الكربون.",
+      "fr": "Un agent déshydratant puissant — retire l'eau des composés organiques, ne laissant que du carbone."
+    }
+  },
+  "hydrochloric_acid": {
+    "name": {
+      "en": "Hydrochloric Acid",
+      "ar": "حمض الهيدروكلوريك",
+      "fr": "Acide chlorhydrique"
     },
-    sodium_oxide: {
-      name: { en: 'Sodium Oxide', ar: 'أكسيد الصوديوم' }, formula: 'Na₂O', bottleColor: '#fafafa',
-      short: { en: 'Made in Free Lab: O + Na', ar: 'صُنع في اللعب الحر: O + Na' },
-      info: { en: 'A white solid formed when sodium burns in oxygen — reacts vigorously with water to form NaOH.', ar: 'صلب أبيض يتكوّن عند احتراق الصوديوم بالأكسجين — يتفاعل بعنف مع الماء مكوّناً NaOH.' },
+    "formula": "HCl",
+    "bottleColor": "#fca5a5",
+    "short": {
+      "en": "Strong acid",
+      "ar": "حمض قوي",
+      "fr": "Acide fort"
     },
-    sulfur_dioxide: {
-      name: { en: 'Sulfur Dioxide', ar: 'ثاني أكسيد الكبريت' }, formula: 'SO₂', bottleColor: '#fef9c3',
-      short: { en: 'Made in Free Lab: O + S', ar: 'صُنع في اللعب الحر: O + S' },
-      info: { en: 'A pungent gas released when sulfur burns — used to preserve dried fruit and a major cause of acid rain.', ar: 'غاز نفاذ يتصاعد عند احتراق الكبريت — يُستخدم لحفظ الفواكه المجففة وهو سبب رئيسي للمطر الحمضي.' },
+    "info": {
+      "en": "A strong acid that ionizes completely in water, formed directly from hydrogen + chlorine gas — reacts with metals, but less dramatically than concentrated HNO₃, and doesn't dehydrate sugar.",
+      "ar": "حمض قوي يتأين بالكامل بالماء، ويتكوّن مباشرة من غاز الهيدروجين والكلور — يتفاعل مع المعادن لكن بعنف أقل من HNO₃ المركز، ولا يجفف السكر.",
+      "fr": "Un acide fort qui s'ionise complètement dans l'eau, formé directement à partir d'hydrogène + chlore gazeux — réagit avec les métaux, mais moins violemment que le HNO₃ concentré, et ne déshydrate pas le sucre."
+    }
+  },
+  "aluminum": {
+    "name": {
+      "en": "Aluminum Powder",
+      "ar": "مسحوق الألومنيوم",
+      "fr": "Aluminium en poudre"
     },
-    zinc_oxide: {
-      name: { en: 'Zinc Oxide', ar: 'أكسيد الزنك' }, formula: 'ZnO', bottleColor: '#f5f5f4',
-      short: { en: 'Made in Free Lab: O + Zn', ar: 'صُنع في اللعب الحر: O + Zn' },
-      info: { en: 'A white powder — the active ingredient in mineral sunscreen and diaper rash cream.', ar: 'مسحوق أبيض — المكوّن الفعّال في واقي الشمس المعدني وكريمات التسلخ.' },
+    "formula": "Al",
+    "bottleColor": "#e5e7eb",
+    "short": {
+      "en": "Amphoteric metal",
+      "ar": "معدن برمائي",
+      "fr": "Métal amphotère"
     },
-    calcium_oxide: {
-      name: { en: 'Calcium Oxide (Quicklime)', ar: 'أكسيد الكالسيوم (الكلس الحي)' }, formula: 'CaO', bottleColor: '#e7e5e4',
-      short: { en: 'Made in Free Lab: O + Ca', ar: 'صُنع في اللعب الحر: O + Ca' },
-      info: { en: 'Made by burning calcium — reacts strongly with water, releasing heat, to form slaked lime.', ar: 'يُصنع بحرق الكالسيوم — يتفاعل بقوة مع الماء محرراً حرارة ليكوّن الجير المطفأ.' },
+    "info": {
+      "en": "Reacts with both acids AND strong bases — amphoteric. Reacts vigorously with NaOH + water.",
+      "ar": "يتفاعل مع الحمضيات والقواعد القوية — برمائي. يتفاعل بعنف مع NaOH والماء.",
+      "fr": "Réagit à la fois avec les acides ET les bases fortes — amphotère. Réagit vigoureusement avec NaOH + eau."
+    }
+  },
+  "naoh": {
+    "name": {
+      "en": "Sodium Hydroxide",
+      "ar": "هيدروكسيد الصوديوم",
+      "fr": "Hydroxyde de sodium"
     },
-    copper_oxide: {
-      name: { en: 'Copper Oxide', ar: 'أكسيد النحاس' }, formula: 'CuO', bottleColor: '#1c1917',
-      short: { en: 'Made in Free Lab: O + Cu', ar: 'صُنع في اللعب الحر: O + Cu' },
-      info: { en: 'A black powder that forms on copper\'s surface when heated in air.', ar: 'مسحوق أسود يتكوّن على سطح النحاس عند تسخينه بالهواء.' },
+    "formula": "NaOH",
+    "bottleColor": "#a5f3fc",
+    "short": {
+      "en": "Strong base",
+      "ar": "قاعدة قوية",
+      "fr": "Base forte"
     },
-    aluminum_oxide: {
-      name: { en: 'Aluminum Oxide', ar: 'أكسيد الألومنيوم' }, formula: 'Al₂O₃', bottleColor: '#fff1f2',
-      short: { en: 'Made in Free Lab: O + Al', ar: 'صُنع في اللعب الحر: O + Al' },
-      info: { en: 'An extremely hard white powder — the natural form is corundum, the mineral behind rubies and sapphires.', ar: 'مسحوق أبيض شديد الصلابة — شكله الطبيعي هو الكوراندوم، المعدن الأساسي للياقوت بأنواعه.' },
+    "info": {
+      "en": "A strong base — neutralizes acids and reacts with amphoteric metals like aluminum, releasing hydrogen gas.",
+      "ar": "قاعدة قوية — تعادل الأحماض وتتفاعل مع المعادن البرمائية مثل الألومنيوم، محررة غاز الهيدروجين.",
+      "fr": "Une base forte — neutralise les acides et réagit avec les métaux amphotères comme l'aluminium, libérant de l'hydrogène gazeux."
+    }
+  },
+  "copper_sulfate": {
+    "name": {
+      "en": "Copper Sulfate Solution",
+      "ar": "محلول كبريتات النحاس",
+      "fr": "Solution de sulfate de cuivre"
     },
-    sodium_iodide: {
-      name: { en: 'Sodium Iodide', ar: 'يوديد الصوديوم' }, formula: 'NaI', bottleColor: '#fef2f2',
-      short: { en: 'Made in Free Lab: Na + I', ar: 'صُنع في اللعب الحر: Na + I' },
-      info: { en: 'A white salt, similar to table salt — added to table salt in some countries to prevent iodine deficiency.', ar: 'ملح أبيض شبيه بملح الطعام — يُضاف لملح الطعام ببعض الدول للوقاية من نقص اليود.' },
+    "formula": "CuSO₄",
+    "bottleColor": "#2563eb",
+    "short": {
+      "en": "Metal salt",
+      "ar": "ملح معدني",
+      "fr": "Sel métallique"
     },
-    zinc_chloride: {
-      name: { en: 'Zinc Chloride', ar: 'كلوريد الزنك' }, formula: 'ZnCl₂', bottleColor: '#f0fdf4',
-      short: { en: 'Made in Free Lab: Cl + Zn', ar: 'صُنع في اللعب الحر: Cl + Zn' },
-      info: { en: 'A white solid that readily absorbs moisture from the air — used in soldering flux.', ar: 'صلب أبيض يمتص الرطوبة من الهواء بسهولة — يُستخدم في مادة اللحام المساعدة.' },
+    "info": {
+      "en": "Bright blue solution — more reactive metals such as zinc or iron displace the copper from it.",
+      "ar": "محلول أزرق ساطع — المعادن الأكثر تفاعلاً مثل الزنك أو الحديد تزيح النحاس منه.",
+      "fr": "Solution bleu vif — les métaux plus réactifs comme le zinc ou le fer en déplacent le cuivre."
+    }
+  },
+  "vinegar": {
+    "name": {
+      "en": "Vinegar (Acetic Acid)",
+      "ar": "الخل (حمض الأسيتيك)",
+      "fr": "Vinaigre (acide acétique)"
     },
-    calcium_chloride: {
-      name: { en: 'Calcium Chloride', ar: 'كلوريد الكالسيوم' }, formula: 'CaCl₂', bottleColor: '#ecfeff',
-      short: { en: 'Made in Free Lab: Cl + Ca', ar: 'صُنع في اللعب الحر: Cl + Ca' },
-      info: { en: 'A white salt used to de-ice roads in winter and as a food preservative.', ar: 'ملح أبيض يُستخدم لإذابة الثلج عن الطرق شتاءً وكمادة حافظة للأغذية.' },
+    "formula": "CH₃COOH",
+    "bottleColor": "#f0d9a0",
+    "short": {
+      "en": "Weak acid",
+      "ar": "حمض ضعيف",
+      "fr": "Acide faible"
     },
-    copper_chloride: {
-      name: { en: 'Copper Chloride', ar: 'كلوريد النحاس' }, formula: 'CuCl₂', bottleColor: '#06b6d4',
-      short: { en: 'Made in Free Lab: Cl + Cu', ar: 'صُنع في اللعب الحر: Cl + Cu' },
-      info: { en: 'Forms distinctive blue-green crystals — used to add a green-blue color to fireworks and flames.', ar: 'يكوّن بلورات مميزة بلون أزرق مخضر — يُستخدم لإضافة لون أزرق مخضر للألعاب النارية واللهب.' },
+    "info": {
+      "en": "A weak acid — fizzes with baking soda to release CO₂ gas, but too mild for reactions needing a strong acid or base.",
+      "ar": "حمض ضعيف — يفور مع بيكربونات الصوديوم ليطلق غاز CO₂، لكنه ضعيف جداً للتفاعلات التي تحتاج حمضاً أو قاعدة قوية.",
+      "fr": "Un acide faible — pétille avec le bicarbonate de soude pour libérer du gaz CO₂, mais trop doux pour les réactions nécessitant un acide ou une base forte."
+    }
+  },
+  "baking_soda": {
+    "name": {
+      "en": "Baking Soda Solution",
+      "ar": "محلول بيكربونات الصوديوم",
+      "fr": "Solution de bicarbonate de soude"
     },
-    aluminum_chloride: {
-      name: { en: 'Aluminum Chloride', ar: 'كلوريد الألومنيوم' }, formula: 'AlCl₃', bottleColor: '#fde68a',
-      short: { en: 'Made in Free Lab: Cl + Al', ar: 'صُنع في اللعب الحر: Cl + Al' },
-      info: { en: 'A pale yellow solid formed in a vigorous reaction — widely used as a catalyst in the chemical industry.', ar: 'صلب أصفر باهت يتكوّن بتفاعل عنيف — يُستخدم على نطاق واسع كعامل حفّاز بالصناعة الكيميائية.' },
+    "formula": "NaHCO₃",
+    "bottleColor": "#f1f5f9",
+    "short": {
+      "en": "Mild base",
+      "ar": "قاعدة خفيفة",
+      "fr": "Base douce"
     },
-    iron_chloride: {
-      name: { en: 'Iron(III) Chloride', ar: 'كلوريد الحديد الثلاثي' }, formula: 'FeCl₃', bottleColor: '#78350f',
-      short: { en: 'Made in Free Lab: Cl + Fe', ar: 'صُنع في اللعب الحر: Cl + Fe' },
-      info: { en: 'Iron burns in chlorine gas with a fiery glow to form this dark solid — widely used to etch copper circuit boards.', ar: 'يحترق الحديد بغاز الكلور بتوهج ناري مكوّناً هذا الصلب الداكن — يُستخدم على نطاق واسع لحفر دوائر النحاس الإلكترونية.' },
+    "info": {
+      "en": "A mild base — reacts with acids like vinegar to release carbon dioxide gas, causing fizzing.",
+      "ar": "قاعدة خفيفة — تتفاعل مع الأحماض مثل الخل لتطلق غاز ثاني أكسيد الكربون، مسببة الفوران.",
+      "fr": "Une base douce — réagit avec des acides comme le vinaigre pour libérer du dioxyde de carbone, provoquant l'effervescence."
+    }
+  },
+  "iron": {
+    "name": {
+      "en": "Iron Filings",
+      "ar": "برادة الحديد",
+      "fr": "Limaille de fer"
     },
-    zinc_sulfide: {
-      name: { en: 'Zinc Sulfide', ar: 'كبريتيد الزنك' }, formula: 'ZnS', bottleColor: '#fefce8',
-      short: { en: 'Made in Free Lab: S + Zn', ar: 'صُنع في اللعب الحر: S + Zn' },
-      info: { en: 'A pale solid that glows in the dark after exposure to light — used in glow-in-the-dark materials.', ar: 'صلب باهت يتوهج بالظلام بعد التعرض للضوء — يُستخدم في المواد المتوهجة بالظلام.' },
+    "formula": "Fe",
+    "bottleColor": "#52525b",
+    "short": {
+      "en": "Metal",
+      "ar": "معدن",
+      "fr": "Métal"
     },
-  };
+    "info": {
+      "en": "A reactive metal — displaces copper from copper sulfate solution and combines with sulfur when heated.",
+      "ar": "معدن متفاعل — يزيح النحاس من محلول كبريتات النحاس ويتحد مع الكبريت عند التسخين.",
+      "fr": "Un métal réactif — déplace le cuivre d'une solution de sulfate de cuivre et se combine avec le soufre sous l'effet de la chaleur."
+    }
+  },
+  "hydrogen_peroxide": {
+    "name": {
+      "en": "Hydrogen Peroxide",
+      "ar": "بيروكسيد الهيدروجين",
+      "fr": "Peroxyde d'hydrogène"
+    },
+    "formula": "H₂O₂",
+    "bottleColor": "#eff6ff",
+    "short": {
+      "en": "Oxidizer",
+      "ar": "مؤكسد",
+      "fr": "Oxydant"
+    },
+    "info": {
+      "en": "Breaks down into water and oxygen gas — rapidly when a catalyst such as MnO₂ or potassium iodide is present.",
+      "ar": "يتحلل إلى ماء وغاز أكسجين — بسرعة عند وجود عامل حفّاز مثل MnO₂ أو يوديد البوتاسيوم.",
+      "fr": "Se décompose en eau et en oxygène gazeux — rapidement en présence d'un catalyseur comme le MnO₂ ou l'iodure de potassium."
+    }
+  },
+  "potassium_iodide": {
+    "name": {
+      "en": "Potassium Iodide",
+      "ar": "يوديد البوتاسيوم",
+      "fr": "Iodure de potassium"
+    },
+    "formula": "KI",
+    "bottleColor": "#fff7cd",
+    "short": {
+      "en": "Metal salt",
+      "ar": "ملح معدني",
+      "fr": "Sel métallique"
+    },
+    "info": {
+      "en": "Colorless solution — forms a bright yellow precipitate with lead ions and rapidly catalyzes hydrogen peroxide breakdown.",
+      "ar": "محلول عديم اللون — يكوّن راسباً أصفر ساطعاً مع أيونات الرصاص ويحفّز بسرعة تحلل بيروكسيد الهيدروجين.",
+      "fr": "Solution incolore — forme un précipité jaune vif avec les ions plomb et catalyse rapidement la décomposition du peroxyde d'hydrogène."
+    }
+  },
+  "dry_ice": {
+    "name": {
+      "en": "Dry Ice",
+      "ar": "الثلج الجاف",
+      "fr": "Glace carbonique"
+    },
+    "formula": "CO₂ (solid)",
+    "bottleColor": "#f0f9ff",
+    "short": {
+      "en": "Solid CO₂",
+      "ar": "ثاني أكسيد الكربون الصلب",
+      "fr": "CO₂ solide"
+    },
+    "info": {
+      "en": "Frozen carbon dioxide — sublimates straight into gas, and in warm water produces dense, visible white fog.",
+      "ar": "ثاني أكسيد الكربون المجمد — يتسامى مباشرة إلى غاز، وفي الماء الدافئ ينتج ضباباً أبيض كثيفاً ومرئياً.",
+      "fr": "Dioxyde de carbone gelé — se sublime directement en gaz, et dans l'eau chaude produit un brouillard blanc dense et visible."
+    }
+  },
+  "warm_water": {
+    "name": {
+      "en": "Warm Water",
+      "ar": "ماء دافئ",
+      "fr": "Eau tiède"
+    },
+    "formula": "H₂O (warm)",
+    "bottleColor": "#bae6fd",
+    "short": {
+      "en": "Solvent",
+      "ar": "مذيب",
+      "fr": "Solvant"
+    },
+    "info": {
+      "en": "Warm water speeds up the sublimation of dry ice, producing thicker, more visible fog than cold water would.",
+      "ar": "الماء الدافئ يسرّع تسامي الثلج الجاف، منتجاً ضباباً أكثف وأوضح من الماء البارد.",
+      "fr": "L'eau tiède accélère la sublimation de la glace carbonique, produisant un brouillard plus épais et plus visible que l'eau froide."
+    }
+  },
+  "luminol": {
+    "name": {
+      "en": "Luminol",
+      "ar": "اللومينول",
+      "fr": "Luminol"
+    },
+    "formula": "C₈H₇N₃O₂",
+    "bottleColor": "#e0e7ff",
+    "short": {
+      "en": "Chemiluminescent compound",
+      "ar": "مركب كيميائي مضيء",
+      "fr": "Composé chimiluminescent"
+    },
+    "info": {
+      "en": "Glows blue-green when oxidized by hydrogen peroxide — the same reaction forensic teams use to detect trace blood.",
+      "ar": "يتوهج بلون أزرق مخضر عند أكسدته ببيروكسيد الهيدروجين — نفس التفاعل الذي تستخدمه الفرق الجنائية للكشف عن آثار الدم.",
+      "fr": "Brille en bleu-vert lorsqu'il est oxydé par le peroxyde d'hydrogène — la même réaction utilisée par la police scientifique pour détecter des traces de sang."
+    }
+  },
+  "potassium": {
+    "name": {
+      "en": "Potassium Metal",
+      "ar": "معدن البوتاسيوم",
+      "fr": "Potassium métallique"
+    },
+    "formula": "K",
+    "bottleColor": "#94a3b8",
+    "short": {
+      "en": "Alkali metal",
+      "ar": "معدن قلوي",
+      "fr": "Métal alcalin"
+    },
+    "info": {
+      "en": "An extremely reactive alkali metal — similar to sodium but reacts even more violently and dangerously with water.",
+      "ar": "معدن قلوي شديد التفاعل — يشبه الصوديوم لكنه يتفاعل بعنف وخطورة أكبر مع الماء.",
+      "fr": "Un métal alcalin extrêmement réactif — semblable au sodium mais réagit encore plus violemment et dangereusement avec l'eau."
+    }
+  },
+  "ammonia": {
+    "name": {
+      "en": "Ammonia",
+      "ar": "الأمونيا",
+      "fr": "Ammoniac"
+    },
+    "formula": "NH₃",
+    "bottleColor": "#ddd6fe",
+    "short": {
+      "en": "Made in Free Lab: N + H",
+      "ar": "صُنعت في اللعب الحر: N + H",
+      "fr": "Fabriqué en Labo Libre : N + H"
+    },
+    "info": {
+      "en": "A pungent gas made of nitrogen and hydrogen — used industrially to make fertilizers.",
+      "ar": "غاز نفاذ الرائحة مكوّن من النيتروجين والهيدروجين — يُستخدم صناعياً لصنع الأسمدة.",
+      "fr": "Un gaz piquant composé d'azote et d'hydrogène — utilisé industriellement pour fabriquer des engrais."
+    }
+  },
+  "carbon_dioxide": {
+    "name": {
+      "en": "Carbon Dioxide",
+      "ar": "ثاني أكسيد الكربون",
+      "fr": "Dioxyde de carbone"
+    },
+    "formula": "CO₂",
+    "bottleColor": "#cbd5e1",
+    "short": {
+      "en": "Made in Free Lab: C + O",
+      "ar": "صُنع في اللعب الحر: C + O",
+      "fr": "Fabriqué en Labo Libre : C + O"
+    },
+    "info": {
+      "en": "The gas you exhale and plants absorb — also what makes soda fizzy.",
+      "ar": "الغاز الذي تزفره وتمتصه النباتات — وهو أيضاً ما يجعل المشروبات الغازية فوّارة.",
+      "fr": "Le gaz que vous expirez et que les plantes absorbent — c'est aussi ce qui rend les sodas pétillants."
+    }
+  },
+  "iron_sulfide": {
+    "name": {
+      "en": "Iron Sulfide",
+      "ar": "كبريتيد الحديد",
+      "fr": "Sulfure de fer"
+    },
+    "formula": "FeS",
+    "bottleColor": "#44403c",
+    "short": {
+      "en": "Made in Free Lab: Fe + S",
+      "ar": "صُنع في اللعب الحر: Fe + S",
+      "fr": "Fabriqué en Labo Libre : Fe + S"
+    },
+    "info": {
+      "en": "A dull black solid formed when iron and sulfur combine directly under heat.",
+      "ar": "صلب أسود باهت يتكوّن عند اتحاد الحديد والكبريت مباشرة تحت الحرارة.",
+      "fr": "Un solide noir terne formé lorsque le fer et le soufre se combinent directement sous la chaleur."
+    }
+  },
+  "potassium_chloride": {
+    "name": {
+      "en": "Potassium Chloride",
+      "ar": "كلوريد البوتاسيوم",
+      "fr": "Chlorure de potassium"
+    },
+    "formula": "KCl",
+    "bottleColor": "#f3f4f6",
+    "short": {
+      "en": "Made in Free Lab: K + Cl",
+      "ar": "صُنع في اللعب الحر: K + Cl",
+      "fr": "Fabriqué en Labo Libre : K + Cl"
+    },
+    "info": {
+      "en": "A white salt, chemically similar to table salt — sometimes used as a low-sodium salt substitute.",
+      "ar": "ملح أبيض شبيه كيميائياً بملح الطعام — يُستخدم أحياناً كبديل منخفض الصوديوم.",
+      "fr": "Un sel blanc, chimiquement semblable au sel de table — parfois utilisé comme substitut de sel pauvre en sodium."
+    }
+  },
+  "methane": {
+    "name": {
+      "en": "Methane",
+      "ar": "الميثان",
+      "fr": "Méthane"
+    },
+    "formula": "CH₄",
+    "bottleColor": "#bfdbfe",
+    "short": {
+      "en": "Made in Free Lab: C + H",
+      "ar": "صُنع في اللعب الحر: C + H",
+      "fr": "Fabriqué en Labo Libre : C + H"
+    },
+    "info": {
+      "en": "The simplest hydrocarbon — the main component of natural gas.",
+      "ar": "أبسط مركب هيدروكربوني — المكوّن الرئيسي للغاز الطبيعي.",
+      "fr": "L'hydrocarbure le plus simple — le composant principal du gaz naturel."
+    }
+  },
+  "hydrogen_sulfide": {
+    "name": {
+      "en": "Hydrogen Sulfide",
+      "ar": "كبريتيد الهيدروجين",
+      "fr": "Sulfure d'hydrogène"
+    },
+    "formula": "H₂S",
+    "bottleColor": "#d9f99d",
+    "short": {
+      "en": "Made in Free Lab: H + S",
+      "ar": "صُنع في اللعب الحر: H + S",
+      "fr": "Fabriqué en Labo Libre : H + S"
+    },
+    "info": {
+      "en": "A toxic gas with the unmistakable smell of rotten eggs.",
+      "ar": "غاز سام برائحة البيض الفاسد المميزة.",
+      "fr": "Un gaz toxique à l'odeur caractéristique d'œufs pourris."
+    }
+  },
+  "sodium_hydride": {
+    "name": {
+      "en": "Sodium Hydride",
+      "ar": "هيدريد الصوديوم",
+      "fr": "Hydrure de sodium"
+    },
+    "formula": "NaH",
+    "bottleColor": "#a1a1aa",
+    "short": {
+      "en": "Made in Free Lab: H + Na",
+      "ar": "صُنع في اللعب الحر: H + Na",
+      "fr": "Fabriqué en Labo Libre : H + Na"
+    },
+    "info": {
+      "en": "An ionic solid where hydrogen acts as a negative ion (H⁻) — reacts violently with water, releasing H₂ gas.",
+      "ar": "صلب أيوني يتصرف فيه الهيدروجين كأيون سالب (H⁻) — يتفاعل بعنف مع الماء محرراً غاز H₂.",
+      "fr": "Un solide ionique où l'hydrogène agit comme un ion négatif (H⁻) — réagit violemment avec l'eau, libérant du gaz H₂."
+    }
+  },
+  "hydrogen_iodide": {
+    "name": {
+      "en": "Hydrogen Iodide",
+      "ar": "يوديد الهيدروجين",
+      "fr": "Iodure d'hydrogène"
+    },
+    "formula": "HI",
+    "bottleColor": "#f5d0c5",
+    "short": {
+      "en": "Made in Free Lab: H + I",
+      "ar": "صُنع في اللعب الحر: H + I",
+      "fr": "Fabriqué en Labo Libre : H + I"
+    },
+    "info": {
+      "en": "A fuming acidic gas — dissolves in water to form hydroiodic acid, one of the strongest common acids.",
+      "ar": "غاز حمضي متصاعد — يذوب بالماء مكوّناً حمض الهيدرويوديك، أحد أقوى الأحماض الشائعة.",
+      "fr": "Un gaz acide fumant — se dissout dans l'eau pour former l'acide iodhydrique, l'un des acides courants les plus forts."
+    }
+  },
+  "nitrogen_dioxide": {
+    "name": {
+      "en": "Nitrogen Dioxide",
+      "ar": "ثاني أكسيد النيتروجين",
+      "fr": "Dioxyde d'azote"
+    },
+    "formula": "NO₂",
+    "bottleColor": "#c2410c",
+    "short": {
+      "en": "Made in Free Lab: O + N",
+      "ar": "صُنع في اللعب الحر: O + N",
+      "fr": "Fabriqué en Labo Libre : O + N"
+    },
+    "info": {
+      "en": "A reddish-brown toxic gas — a major component of smog and acid rain.",
+      "ar": "غاز سام بني محمر — من المكوّنات الرئيسية للضباب الدخاني والمطر الحمضي.",
+      "fr": "Un gaz toxique brun-rougeâtre — un composant majeur du smog et des pluies acides."
+    }
+  },
+  "sodium_oxide": {
+    "name": {
+      "en": "Sodium Oxide",
+      "ar": "أكسيد الصوديوم",
+      "fr": "Oxyde de sodium"
+    },
+    "formula": "Na₂O",
+    "bottleColor": "#fafafa",
+    "short": {
+      "en": "Made in Free Lab: O + Na",
+      "ar": "صُنع في اللعب الحر: O + Na",
+      "fr": "Fabriqué en Labo Libre : O + Na"
+    },
+    "info": {
+      "en": "A white solid formed when sodium burns in oxygen — reacts vigorously with water to form NaOH.",
+      "ar": "صلب أبيض يتكوّن عند احتراق الصوديوم بالأكسجين — يتفاعل بعنف مع الماء مكوّناً NaOH.",
+      "fr": "Un solide blanc formé quand le sodium brûle dans l'oxygène — réagit vigoureusement avec l'eau pour former du NaOH."
+    }
+  },
+  "sulfur_dioxide": {
+    "name": {
+      "en": "Sulfur Dioxide",
+      "ar": "ثاني أكسيد الكبريت",
+      "fr": "Dioxyde de soufre"
+    },
+    "formula": "SO₂",
+    "bottleColor": "#fef9c3",
+    "short": {
+      "en": "Made in Free Lab: O + S",
+      "ar": "صُنع في اللعب الحر: O + S",
+      "fr": "Fabriqué en Labo Libre : O + S"
+    },
+    "info": {
+      "en": "A pungent gas released when sulfur burns — used to preserve dried fruit and a major cause of acid rain.",
+      "ar": "غاز نفاذ يتصاعد عند احتراق الكبريت — يُستخدم لحفظ الفواكه المجففة وهو سبب رئيسي للمطر الحمضي.",
+      "fr": "Un gaz piquant libéré quand le soufre brûle — utilisé pour conserver les fruits séchés et cause majeure des pluies acides."
+    }
+  },
+  "zinc_oxide": {
+    "name": {
+      "en": "Zinc Oxide",
+      "ar": "أكسيد الزنك",
+      "fr": "Oxyde de zinc"
+    },
+    "formula": "ZnO",
+    "bottleColor": "#f5f5f4",
+    "short": {
+      "en": "Made in Free Lab: O + Zn",
+      "ar": "صُنع في اللعب الحر: O + Zn",
+      "fr": "Fabriqué en Labo Libre : O + Zn"
+    },
+    "info": {
+      "en": "A white powder — the active ingredient in mineral sunscreen and diaper rash cream.",
+      "ar": "مسحوق أبيض — المكوّن الفعّال في واقي الشمس المعدني وكريمات التسلخ.",
+      "fr": "Une poudre blanche — l'ingrédient actif des crèmes solaires minérales et des crèmes contre l'érythème fessier."
+    }
+  },
+  "calcium_oxide": {
+    "name": {
+      "en": "Calcium Oxide (Quicklime)",
+      "ar": "أكسيد الكالسيوم (الكلس الحي)",
+      "fr": "Oxyde de calcium (chaux vive)"
+    },
+    "formula": "CaO",
+    "bottleColor": "#e7e5e4",
+    "short": {
+      "en": "Made in Free Lab: O + Ca",
+      "ar": "صُنع في اللعب الحر: O + Ca",
+      "fr": "Fabriqué en Labo Libre : O + Ca"
+    },
+    "info": {
+      "en": "Made by burning calcium — reacts strongly with water, releasing heat, to form slaked lime.",
+      "ar": "يُصنع بحرق الكالسيوم — يتفاعل بقوة مع الماء محرراً حرارة ليكوّن الجير المطفأ.",
+      "fr": "Obtenu en brûlant du calcium — réagit fortement avec l'eau, en dégageant de la chaleur, pour former de la chaux éteinte."
+    }
+  },
+  "copper_oxide": {
+    "name": {
+      "en": "Copper Oxide",
+      "ar": "أكسيد النحاس",
+      "fr": "Oxyde de cuivre"
+    },
+    "formula": "CuO",
+    "bottleColor": "#1c1917",
+    "short": {
+      "en": "Made in Free Lab: O + Cu",
+      "ar": "صُنع في اللعب الحر: O + Cu",
+      "fr": "Fabriqué en Labo Libre : O + Cu"
+    },
+    "info": {
+      "en": "A black powder that forms on copper's surface when heated in air.",
+      "ar": "مسحوق أسود يتكوّن على سطح النحاس عند تسخينه بالهواء.",
+      "fr": "Une poudre noire qui se forme à la surface du cuivre chauffé à l'air."
+    }
+  },
+  "aluminum_oxide": {
+    "name": {
+      "en": "Aluminum Oxide",
+      "ar": "أكسيد الألومنيوم",
+      "fr": "Oxyde d'aluminium"
+    },
+    "formula": "Al₂O₃",
+    "bottleColor": "#fff1f2",
+    "short": {
+      "en": "Made in Free Lab: O + Al",
+      "ar": "صُنع في اللعب الحر: O + Al",
+      "fr": "Fabriqué en Labo Libre : O + Al"
+    },
+    "info": {
+      "en": "An extremely hard white powder — the natural form is corundum, the mineral behind rubies and sapphires.",
+      "ar": "مسحوق أبيض شديد الصلابة — شكله الطبيعي هو الكوراندوم، المعدن الأساسي للياقوت بأنواعه.",
+      "fr": "Une poudre blanche extrêmement dure — sa forme naturelle est le corindon, le minéral à l'origine des rubis et des saphirs."
+    }
+  },
+  "sodium_iodide": {
+    "name": {
+      "en": "Sodium Iodide",
+      "ar": "يوديد الصوديوم",
+      "fr": "Iodure de sodium"
+    },
+    "formula": "NaI",
+    "bottleColor": "#fef2f2",
+    "short": {
+      "en": "Made in Free Lab: Na + I",
+      "ar": "صُنع في اللعب الحر: Na + I",
+      "fr": "Fabriqué en Labo Libre : Na + I"
+    },
+    "info": {
+      "en": "A white salt, similar to table salt — added to table salt in some countries to prevent iodine deficiency.",
+      "ar": "ملح أبيض شبيه بملح الطعام — يُضاف لملح الطعام ببعض الدول للوقاية من نقص اليود.",
+      "fr": "Un sel blanc, semblable au sel de table — ajouté au sel de table dans certains pays pour prévenir la carence en iode."
+    }
+  },
+  "zinc_chloride": {
+    "name": {
+      "en": "Zinc Chloride",
+      "ar": "كلوريد الزنك",
+      "fr": "Chlorure de zinc"
+    },
+    "formula": "ZnCl₂",
+    "bottleColor": "#f0fdf4",
+    "short": {
+      "en": "Made in Free Lab: Cl + Zn",
+      "ar": "صُنع في اللعب الحر: Cl + Zn",
+      "fr": "Fabriqué en Labo Libre : Cl + Zn"
+    },
+    "info": {
+      "en": "A white solid that readily absorbs moisture from the air — used in soldering flux.",
+      "ar": "صلب أبيض يمتص الرطوبة من الهواء بسهولة — يُستخدم في مادة اللحام المساعدة.",
+      "fr": "Un solide blanc qui absorbe facilement l'humidité de l'air — utilisé dans le flux de soudure."
+    }
+  },
+  "calcium_chloride": {
+    "name": {
+      "en": "Calcium Chloride",
+      "ar": "كلوريد الكالسيوم",
+      "fr": "Chlorure de calcium"
+    },
+    "formula": "CaCl₂",
+    "bottleColor": "#ecfeff",
+    "short": {
+      "en": "Made in Free Lab: Cl + Ca",
+      "ar": "صُنع في اللعب الحر: Cl + Ca",
+      "fr": "Fabriqué en Labo Libre : Cl + Ca"
+    },
+    "info": {
+      "en": "A white salt used to de-ice roads in winter and as a food preservative.",
+      "ar": "ملح أبيض يُستخدم لإذابة الثلج عن الطرق شتاءً وكمادة حافظة للأغذية.",
+      "fr": "Un sel blanc utilisé pour déglacer les routes en hiver et comme conservateur alimentaire."
+    }
+  },
+  "copper_chloride": {
+    "name": {
+      "en": "Copper Chloride",
+      "ar": "كلوريد النحاس",
+      "fr": "Chlorure de cuivre"
+    },
+    "formula": "CuCl₂",
+    "bottleColor": "#06b6d4",
+    "short": {
+      "en": "Made in Free Lab: Cl + Cu",
+      "ar": "صُنع في اللعب الحر: Cl + Cu",
+      "fr": "Fabriqué en Labo Libre : Cl + Cu"
+    },
+    "info": {
+      "en": "Forms distinctive blue-green crystals — used to add a green-blue color to fireworks and flames.",
+      "ar": "يكوّن بلورات مميزة بلون أزرق مخضر — يُستخدم لإضافة لون أزرق مخضر للألعاب النارية واللهب.",
+      "fr": "Forme des cristaux bleu-vert distinctifs — utilisé pour donner une couleur bleu-vert aux feux d'artifice et aux flammes."
+    }
+  },
+  "aluminum_chloride": {
+    "name": {
+      "en": "Aluminum Chloride",
+      "ar": "كلوريد الألومنيوم",
+      "fr": "Chlorure d'aluminium"
+    },
+    "formula": "AlCl₃",
+    "bottleColor": "#fde68a",
+    "short": {
+      "en": "Made in Free Lab: Cl + Al",
+      "ar": "صُنع في اللعب الحر: Cl + Al",
+      "fr": "Fabriqué en Labo Libre : Cl + Al"
+    },
+    "info": {
+      "en": "A pale yellow solid formed in a vigorous reaction — widely used as a catalyst in the chemical industry.",
+      "ar": "صلب أصفر باهت يتكوّن بتفاعل عنيف — يُستخدم على نطاق واسع كعامل حفّاز بالصناعة الكيميائية.",
+      "fr": "Un solide jaune pâle formé lors d'une réaction vigoureuse — largement utilisé comme catalyseur dans l'industrie chimique."
+    }
+  },
+  "iron_chloride": {
+    "name": {
+      "en": "Iron(III) Chloride",
+      "ar": "كلوريد الحديد الثلاثي",
+      "fr": "Chlorure de fer (III)"
+    },
+    "formula": "FeCl₃",
+    "bottleColor": "#78350f",
+    "short": {
+      "en": "Made in Free Lab: Cl + Fe",
+      "ar": "صُنع في اللعب الحر: Cl + Fe",
+      "fr": "Fabriqué en Labo Libre : Cl + Fe"
+    },
+    "info": {
+      "en": "Iron burns in chlorine gas with a fiery glow to form this dark solid — widely used to etch copper circuit boards.",
+      "ar": "يحترق الحديد بغاز الكلور بتوهج ناري مكوّناً هذا الصلب الداكن — يُستخدم على نطاق واسع لحفر دوائر النحاس الإلكترونية.",
+      "fr": "Le fer brûle dans le gaz chloré avec un éclat ardent pour former ce solide foncé — largement utilisé pour graver les circuits imprimés en cuivre."
+    }
+  },
+  "zinc_sulfide": {
+    "name": {
+      "en": "Zinc Sulfide",
+      "ar": "كبريتيد الزنك",
+      "fr": "Sulfure de zinc"
+    },
+    "formula": "ZnS",
+    "bottleColor": "#fefce8",
+    "short": {
+      "en": "Made in Free Lab: S + Zn",
+      "ar": "صُنع في اللعب الحر: S + Zn",
+      "fr": "Fabriqué en Labo Libre : S + Zn"
+    },
+    "info": {
+      "en": "A pale solid that glows in the dark after exposure to light — used in glow-in-the-dark materials.",
+      "ar": "صلب باهت يتوهج بالظلام بعد التعرض للضوء — يُستخدم في المواد المتوهجة بالظلام.",
+      "fr": "Un solide pâle qui brille dans le noir après exposition à la lumière — utilisé dans les matériaux phosphorescents."
+    }
+  }
+};
 
   // === FREE MODE ELEMENT REACTIONS ===
   // Every pure element this lab models (no compounds) — the full Free Lab
@@ -611,439 +1664,1302 @@
   ];
 
   const FREE_REACTIONS = [
-    {
-      name: { en: 'Water Formation', ar: 'تكوين الماء' },
-      needed: ['hydrogen', 'oxygen'],
-      result: { color: 'color-cyan', text: { en: '✨ H + O → H₂O (Water) — added to your shelf!', ar: '✨ H + O → H₂O (ماء) — أُضيف إلى رفّك!' } },
-      heat: false,
-      precipitate: false,
-      bubbles: true,
-      produces: 'water',
+  {
+    "name": {
+      "en": "Water Formation",
+      "ar": "تكوين الماء",
+      "fr": "Formation d'eau"
     },
-    {
-      name: { en: 'Ammonia', ar: 'الأمونيا' },
-      needed: ['nitrogen', 'hydrogen'],
-      result: { color: 'color-purple', text: { en: '💜 N + H → NH₃ (Ammonia) — added to your shelf!', ar: '💜 N + H → NH₃ (أمونيا) — أُضيف إلى رفّك!' } },
-      heat: false,
-      precipitate: false,
-      bubbles: true,
-      produces: 'ammonia',
+    "needed": [
+      "hydrogen",
+      "oxygen"
+    ],
+    "result": {
+      "color": "color-cyan",
+      "text": {
+        "en": "✨ H + O → H₂O (Water) — added to your shelf!",
+        "ar": "✨ H + O → H₂O (ماء) — أُضيف إلى رفّك!",
+        "fr": "✨ H + O → H₂O (Eau) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Sodium Chloride (Salt)', ar: 'كلوريد الصوديوم (ملح)' },
-      needed: ['sodium', 'chlorine'],
-      result: { color: 'color-yellow', text: { en: '⚪ Na + Cl → NaCl (Table Salt) — added to your shelf!', ar: '⚪ Na + Cl → NaCl (ملح الطعام) — أُضيف إلى رفّك!' } },
-      heat: true,
-      precipitate: true,
-      bubbles: false,
-      produces: 'sodium_chloride',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "water"
+  },
+  {
+    "name": {
+      "en": "Ammonia",
+      "ar": "الأمونيا",
+      "fr": "Ammoniac"
     },
-    {
-      name: { en: 'Carbon Dioxide', ar: 'ثاني أكسيد الكربون' },
-      needed: ['carbon', 'oxygen'],
-      result: { color: 'color-gray', text: { en: '⚫ C + O → CO₂ (Carbon Dioxide) — added to your shelf!', ar: '⚫ C + O → CO₂ (ثاني أكسيد الكربون) — أُضيف إلى رفّك!' } },
-      heat: false,
-      precipitate: false,
-      bubbles: true,
-      produces: 'carbon_dioxide',
+    "needed": [
+      "nitrogen",
+      "hydrogen"
+    ],
+    "result": {
+      "color": "color-purple",
+      "text": {
+        "en": "💜 N + H → NH₃ (Ammonia) — added to your shelf!",
+        "ar": "💜 N + H → NH₃ (أمونيا) — أُضيف إلى رفّك!",
+        "fr": "💜 N + H → NH₃ (Ammoniac) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Iron Sulfide', ar: 'كبريتيد الحديد' },
-      needed: ['iron', 'sulfur'],
-      result: { color: 'color-colorless', text: { en: '⚫ Fe + S → FeS (Iron Sulfide) — added to your shelf!', ar: '⚫ Fe + S → FeS (كبريتيد الحديد) — أُضيف إلى رفّك!' } },
-      heat: true,
-      precipitate: false,
-      bubbles: false,
-      produces: 'iron_sulfide',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "ammonia"
+  },
+  {
+    "name": {
+      "en": "Sodium Chloride (Salt)",
+      "ar": "كلوريد الصوديوم (ملح)",
+      "fr": "Chlorure de sodium (Sel)"
     },
-    {
-      name: { en: 'Potassium Chloride', ar: 'كلوريد البوتاسيوم' },
-      needed: ['potassium', 'chlorine'],
-      result: { color: 'color-yellow', text: { en: '⚪ K + Cl → KCl (Potassium Chloride) — added to your shelf!', ar: '⚪ K + Cl → KCl (كلوريد البوتاسيوم) — أُضيف إلى رفّك!' } },
-      heat: true,
-      precipitate: true,
-      bubbles: false,
-      produces: 'potassium_chloride',
+    "needed": [
+      "sodium",
+      "chlorine"
+    ],
+    "result": {
+      "color": "color-yellow",
+      "text": {
+        "en": "⚪ Na + Cl → NaCl (Table Salt) — added to your shelf!",
+        "ar": "⚪ Na + Cl → NaCl (ملح الطعام) — أُضيف إلى رفّك!",
+        "fr": "⚪ Na + Cl → NaCl (Sel de table) — ajouté à ton étagère !"
+      }
     },
-
-    // === Expanded table — covers most chemically sensible pairs among
-    //     the 14 raw elements, so almost any reasonable mix discovers
-    //     something (no AI call needed; every result below is a real,
-    //     simple, well-known reaction). ===
-    {
-      name: { en: 'Methane', ar: 'الميثان' },
-      needed: ['carbon', 'hydrogen'],
-      result: { color: 'color-cyan', text: { en: '🔵 C + H → CH₄ (Methane) — added to your shelf!', ar: '🔵 C + H → CH₄ (ميثان) — أُضيف إلى رفّك!' } },
-      heat: false, precipitate: false, bubbles: true, produces: 'methane',
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "sodium_chloride"
+  },
+  {
+    "name": {
+      "en": "Carbon Dioxide",
+      "ar": "ثاني أكسيد الكربون",
+      "fr": "Dioxyde de carbone"
     },
-    {
-      name: { en: 'Hydrogen Chloride', ar: 'كلوريد الهيدروجين' },
-      needed: ['hydrogen', 'chlorine'],
-      result: { color: 'color-pink', text: { en: '💨 H + Cl → HCl (Hydrogen Chloride) — added to your shelf!', ar: '💨 H + Cl → HCl (كلوريد الهيدروجين) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: false, bubbles: false, produces: 'hydrochloric_acid',
+    "needed": [
+      "carbon",
+      "oxygen"
+    ],
+    "result": {
+      "color": "color-gray",
+      "text": {
+        "en": "⚫ C + O → CO₂ (Carbon Dioxide) — added to your shelf!",
+        "ar": "⚫ C + O → CO₂ (ثاني أكسيد الكربون) — أُضيف إلى رفّك!",
+        "fr": "⚫ C + O → CO₂ (Dioxyde de carbone) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Hydrogen Sulfide', ar: 'كبريتيد الهيدروجين' },
-      needed: ['hydrogen', 'sulfur'],
-      result: { color: 'color-green', text: { en: '🟡 H + S → H₂S (Hydrogen Sulfide) — added to your shelf!', ar: '🟡 H + S → H₂S (كبريتيد الهيدروجين) — أُضيف إلى رفّك!' } },
-      heat: false, precipitate: false, bubbles: true, produces: 'hydrogen_sulfide',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "carbon_dioxide"
+  },
+  {
+    "name": {
+      "en": "Iron Sulfide",
+      "ar": "كبريتيد الحديد",
+      "fr": "Sulfure de fer"
     },
-    {
-      name: { en: 'Sodium Hydride', ar: 'هيدريد الصوديوم' },
-      needed: ['hydrogen', 'sodium'],
-      result: { color: 'color-gray', text: { en: '⚪ H + Na → NaH (Sodium Hydride) — added to your shelf!', ar: '⚪ H + Na → NaH (هيدريد الصوديوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'sodium_hydride',
+    "needed": [
+      "iron",
+      "sulfur"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚫ Fe + S → FeS (Iron Sulfide) — added to your shelf!",
+        "ar": "⚫ Fe + S → FeS (كبريتيد الحديد) — أُضيف إلى رفّك!",
+        "fr": "⚫ Fe + S → FeS (Sulfure de fer) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Hydrogen Iodide', ar: 'يوديد الهيدروجين' },
-      needed: ['hydrogen', 'iodine'],
-      result: { color: 'color-pink', text: { en: '💨 H + I → HI (Hydrogen Iodide) — added to your shelf!', ar: '💨 H + I → HI (يوديد الهيدروجين) — أُضيف إلى رفّك!' } },
-      heat: false, precipitate: false, bubbles: false, produces: 'hydrogen_iodide',
+    "heat": true,
+    "precipitate": false,
+    "bubbles": false,
+    "produces": "iron_sulfide"
+  },
+  {
+    "name": {
+      "en": "Potassium Chloride",
+      "ar": "كلوريد البوتاسيوم",
+      "fr": "Chlorure de potassium"
     },
-    {
-      name: { en: 'Nitrogen Dioxide', ar: 'ثاني أكسيد النيتروجين' },
-      needed: ['oxygen', 'nitrogen'],
-      result: { color: 'color-copper', text: { en: '🟤 O + N → NO₂ (Nitrogen Dioxide) — added to your shelf!', ar: '🟤 O + N → NO₂ (ثاني أكسيد النيتروجين) — أُضيف إلى رفّك!' } },
-      heat: false, precipitate: false, bubbles: true, produces: 'nitrogen_dioxide',
+    "needed": [
+      "potassium",
+      "chlorine"
+    ],
+    "result": {
+      "color": "color-yellow",
+      "text": {
+        "en": "⚪ K + Cl → KCl (Potassium Chloride) — added to your shelf!",
+        "ar": "⚪ K + Cl → KCl (كلوريد البوتاسيوم) — أُضيف إلى رفّك!",
+        "fr": "⚪ K + Cl → KCl (Chlorure de potassium) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Sodium Oxide', ar: 'أكسيد الصوديوم' },
-      needed: ['oxygen', 'sodium'],
-      result: { color: 'color-colorless', text: { en: '⚪ O + Na → Na₂O (Sodium Oxide) — added to your shelf!', ar: '⚪ O + Na → Na₂O (أكسيد الصوديوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'sodium_oxide',
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "potassium_chloride"
+  },
+  {
+    "name": {
+      "en": "Methane",
+      "ar": "الميثان",
+      "fr": "Méthane"
     },
-    {
-      name: { en: 'Sulfur Dioxide', ar: 'ثاني أكسيد الكبريت' },
-      needed: ['oxygen', 'sulfur'],
-      result: { color: 'color-yellow', text: { en: '🟡 O + S → SO₂ (Sulfur Dioxide) — added to your shelf!', ar: '🟡 O + S → SO₂ (ثاني أكسيد الكبريت) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: false, bubbles: true, produces: 'sulfur_dioxide',
+    "needed": [
+      "carbon",
+      "hydrogen"
+    ],
+    "result": {
+      "color": "color-cyan",
+      "text": {
+        "en": "🔵 C + H → CH₄ (Methane) — added to your shelf!",
+        "ar": "🔵 C + H → CH₄ (ميثان) — أُضيف إلى رفّك!",
+        "fr": "🔵 C + H → CH₄ (Méthane) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Zinc Oxide', ar: 'أكسيد الزنك' },
-      needed: ['oxygen', 'zinc'],
-      result: { color: 'color-colorless', text: { en: '⚪ O + Zn → ZnO (Zinc Oxide) — added to your shelf!', ar: '⚪ O + Zn → ZnO (أكسيد الزنك) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'zinc_oxide',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "methane"
+  },
+  {
+    "name": {
+      "en": "Hydrogen Chloride",
+      "ar": "كلوريد الهيدروجين",
+      "fr": "Chlorure d'hydrogène"
     },
-    {
-      name: { en: 'Calcium Oxide', ar: 'أكسيد الكالسيوم' },
-      needed: ['oxygen', 'calcium'],
-      result: { color: 'color-colorless', text: { en: '⚪ O + Ca → CaO (Quicklime) — added to your shelf!', ar: '⚪ O + Ca → CaO (الكلس الحي) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'calcium_oxide',
+    "needed": [
+      "hydrogen",
+      "chlorine"
+    ],
+    "result": {
+      "color": "color-pink",
+      "text": {
+        "en": "💨 H + Cl → HCl (Hydrogen Chloride) — added to your shelf!",
+        "ar": "💨 H + Cl → HCl (كلوريد الهيدروجين) — أُضيف إلى رفّك!",
+        "fr": "💨 H + Cl → HCl (Chlorure d'hydrogène) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Copper Oxide', ar: 'أكسيد النحاس' },
-      needed: ['oxygen', 'copper'],
-      result: { color: 'color-gray', text: { en: '⚫ O + Cu → CuO (Copper Oxide) — added to your shelf!', ar: '⚫ O + Cu → CuO (أكسيد النحاس) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'copper_oxide',
+    "heat": true,
+    "precipitate": false,
+    "bubbles": false,
+    "produces": "hydrochloric_acid"
+  },
+  {
+    "name": {
+      "en": "Hydrogen Sulfide",
+      "ar": "كبريتيد الهيدروجين",
+      "fr": "Sulfure d'hydrogène"
     },
-    {
-      name: { en: 'Aluminum Oxide', ar: 'أكسيد الألومنيوم' },
-      needed: ['oxygen', 'aluminum'],
-      result: { color: 'color-colorless', text: { en: '✨ O + Al → Al₂O₃ (Aluminum Oxide) — added to your shelf!', ar: '✨ O + Al → Al₂O₃ (أكسيد الألومنيوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'aluminum_oxide',
+    "needed": [
+      "hydrogen",
+      "sulfur"
+    ],
+    "result": {
+      "color": "color-green",
+      "text": {
+        "en": "🟡 H + S → H₂S (Hydrogen Sulfide) — added to your shelf!",
+        "ar": "🟡 H + S → H₂S (كبريتيد الهيدروجين) — أُضيف إلى رفّك!",
+        "fr": "🟡 H + S → H₂S (Sulfure d'hydrogène) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Iron Oxide (Rust)', ar: 'أكسيد الحديد (الصدأ)' },
-      needed: ['oxygen', 'iron'],
-      result: { color: 'color-copper', text: { en: '🟤 O + Fe → Fe₂O₃ (Iron Oxide) — added to your shelf!', ar: '🟤 O + Fe → Fe₂O₃ (أكسيد الحديد) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'iron_oxide',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "hydrogen_sulfide"
+  },
+  {
+    "name": {
+      "en": "Sodium Hydride",
+      "ar": "هيدريد الصوديوم",
+      "fr": "Hydrure de sodium"
     },
-    {
-      name: { en: 'Sodium Iodide', ar: 'يوديد الصوديوم' },
-      needed: ['sodium', 'iodine'],
-      result: { color: 'color-colorless', text: { en: '⚪ Na + I → NaI (Sodium Iodide) — added to your shelf!', ar: '⚪ Na + I → NaI (يوديد الصوديوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'sodium_iodide',
+    "needed": [
+      "hydrogen",
+      "sodium"
+    ],
+    "result": {
+      "color": "color-gray",
+      "text": {
+        "en": "⚪ H + Na → NaH (Sodium Hydride) — added to your shelf!",
+        "ar": "⚪ H + Na → NaH (هيدريد الصوديوم) — أُضيف إلى رفّك!",
+        "fr": "⚪ H + Na → NaH (Hydrure de sodium) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Zinc Chloride', ar: 'كلوريد الزنك' },
-      needed: ['chlorine', 'zinc'],
-      result: { color: 'color-colorless', text: { en: '⚪ Cl + Zn → ZnCl₂ (Zinc Chloride) — added to your shelf!', ar: '⚪ Cl + Zn → ZnCl₂ (كلوريد الزنك) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'zinc_chloride',
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "sodium_hydride"
+  },
+  {
+    "name": {
+      "en": "Hydrogen Iodide",
+      "ar": "يوديد الهيدروجين",
+      "fr": "Iodure d'hydrogène"
     },
-    {
-      name: { en: 'Calcium Chloride', ar: 'كلوريد الكالسيوم' },
-      needed: ['chlorine', 'calcium'],
-      result: { color: 'color-colorless', text: { en: '⚪ Cl + Ca → CaCl₂ (Calcium Chloride) — added to your shelf!', ar: '⚪ Cl + Ca → CaCl₂ (كلوريد الكالسيوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'calcium_chloride',
+    "needed": [
+      "hydrogen",
+      "iodine"
+    ],
+    "result": {
+      "color": "color-pink",
+      "text": {
+        "en": "💨 H + I → HI (Hydrogen Iodide) — added to your shelf!",
+        "ar": "💨 H + I → HI (يوديد الهيدروجين) — أُضيف إلى رفّك!",
+        "fr": "💨 H + I → HI (Iodure d'hydrogène) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Copper Chloride', ar: 'كلوريد النحاس' },
-      needed: ['chlorine', 'copper'],
-      result: { color: 'color-green', text: { en: '🟢 Cl + Cu → CuCl₂ (Copper Chloride) — added to your shelf!', ar: '🟢 Cl + Cu → CuCl₂ (كلوريد النحاس) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'copper_chloride',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": false,
+    "produces": "hydrogen_iodide"
+  },
+  {
+    "name": {
+      "en": "Nitrogen Dioxide",
+      "ar": "ثاني أكسيد النيتروجين",
+      "fr": "Dioxyde d'azote"
     },
-    {
-      name: { en: 'Aluminum Chloride', ar: 'كلوريد الألومنيوم' },
-      needed: ['chlorine', 'aluminum'],
-      result: { color: 'color-yellow', text: { en: '🟡 Cl + Al → AlCl₃ (Aluminum Chloride) — added to your shelf!', ar: '🟡 Cl + Al → AlCl₃ (كلوريد الألومنيوم) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'aluminum_chloride',
+    "needed": [
+      "oxygen",
+      "nitrogen"
+    ],
+    "result": {
+      "color": "color-copper",
+      "text": {
+        "en": "🟤 O + N → NO₂ (Nitrogen Dioxide) — added to your shelf!",
+        "ar": "🟤 O + N → NO₂ (ثاني أكسيد النيتروجين) — أُضيف إلى رفّك!",
+        "fr": "🟤 O + N → NO₂ (Dioxyde d'azote) — ajouté à ton étagère !"
+      }
     },
-    {
-      name: { en: 'Iron(III) Chloride', ar: 'كلوريد الحديد الثلاثي' },
-      needed: ['chlorine', 'iron'],
-      result: { color: 'color-copper', text: { en: '🟤 Cl + Fe → FeCl₃ (Iron Chloride) — added to your shelf!', ar: '🟤 Cl + Fe → FeCl₃ (كلوريد الحديد) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'iron_chloride',
+    "heat": false,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "nitrogen_dioxide"
+  },
+  {
+    "name": {
+      "en": "Sodium Oxide",
+      "ar": "أكسيد الصوديوم",
+      "fr": "Oxyde de sodium"
     },
-    {
-      name: { en: 'Zinc Sulfide', ar: 'كبريتيد الزنك' },
-      needed: ['sulfur', 'zinc'],
-      result: { color: 'color-colorless', text: { en: '⚪ S + Zn → ZnS (Zinc Sulfide) — added to your shelf!', ar: '⚪ S + Zn → ZnS (كبريتيد الزنك) — أُضيف إلى رفّك!' } },
-      heat: true, precipitate: true, bubbles: false, produces: 'zinc_sulfide',
+    "needed": [
+      "oxygen",
+      "sodium"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ O + Na → Na₂O (Sodium Oxide) — added to your shelf!",
+        "ar": "⚪ O + Na → Na₂O (أكسيد الصوديوم) — أُضيف إلى رفّك!",
+        "fr": "⚪ O + Na → Na₂O (Oxyde de sodium) — ajouté à ton étagère !"
+      }
     },
-  ];
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "sodium_oxide"
+  },
+  {
+    "name": {
+      "en": "Sulfur Dioxide",
+      "ar": "ثاني أكسيد الكبريت",
+      "fr": "Dioxyde de soufre"
+    },
+    "needed": [
+      "oxygen",
+      "sulfur"
+    ],
+    "result": {
+      "color": "color-yellow",
+      "text": {
+        "en": "🟡 O + S → SO₂ (Sulfur Dioxide) — added to your shelf!",
+        "ar": "🟡 O + S → SO₂ (ثاني أكسيد الكبريت) — أُضيف إلى رفّك!",
+        "fr": "🟡 O + S → SO₂ (Dioxyde de soufre) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": false,
+    "bubbles": true,
+    "produces": "sulfur_dioxide"
+  },
+  {
+    "name": {
+      "en": "Zinc Oxide",
+      "ar": "أكسيد الزنك",
+      "fr": "Oxyde de zinc"
+    },
+    "needed": [
+      "oxygen",
+      "zinc"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ O + Zn → ZnO (Zinc Oxide) — added to your shelf!",
+        "ar": "⚪ O + Zn → ZnO (أكسيد الزنك) — أُضيف إلى رفّك!",
+        "fr": "⚪ O + Zn → ZnO (Oxyde de zinc) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "zinc_oxide"
+  },
+  {
+    "name": {
+      "en": "Calcium Oxide",
+      "ar": "أكسيد الكالسيوم",
+      "fr": "Oxyde de calcium"
+    },
+    "needed": [
+      "oxygen",
+      "calcium"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ O + Ca → CaO (Quicklime) — added to your shelf!",
+        "ar": "⚪ O + Ca → CaO (الكلس الحي) — أُضيف إلى رفّك!",
+        "fr": "⚪ O + Ca → CaO (Chaux vive) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "calcium_oxide"
+  },
+  {
+    "name": {
+      "en": "Copper Oxide",
+      "ar": "أكسيد النحاس",
+      "fr": "Oxyde de cuivre"
+    },
+    "needed": [
+      "oxygen",
+      "copper"
+    ],
+    "result": {
+      "color": "color-gray",
+      "text": {
+        "en": "⚫ O + Cu → CuO (Copper Oxide) — added to your shelf!",
+        "ar": "⚫ O + Cu → CuO (أكسيد النحاس) — أُضيف إلى رفّك!",
+        "fr": "⚫ O + Cu → CuO (Oxyde de cuivre) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "copper_oxide"
+  },
+  {
+    "name": {
+      "en": "Aluminum Oxide",
+      "ar": "أكسيد الألومنيوم",
+      "fr": "Oxyde d'aluminium"
+    },
+    "needed": [
+      "oxygen",
+      "aluminum"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "✨ O + Al → Al₂O₃ (Aluminum Oxide) — added to your shelf!",
+        "ar": "✨ O + Al → Al₂O₃ (أكسيد الألومنيوم) — أُضيف إلى رفّك!",
+        "fr": "✨ O + Al → Al₂O₃ (Oxyde d'aluminium) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "aluminum_oxide"
+  },
+  {
+    "name": {
+      "en": "Iron Oxide (Rust)",
+      "ar": "أكسيد الحديد (الصدأ)",
+      "fr": "Oxyde de fer (Rouille)"
+    },
+    "needed": [
+      "oxygen",
+      "iron"
+    ],
+    "result": {
+      "color": "color-copper",
+      "text": {
+        "en": "🟤 O + Fe → Fe₂O₃ (Iron Oxide) — added to your shelf!",
+        "ar": "🟤 O + Fe → Fe₂O₃ (أكسيد الحديد) — أُضيف إلى رفّك!",
+        "fr": "🟤 O + Fe → Fe₂O₃ (Oxyde de fer) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "iron_oxide"
+  },
+  {
+    "name": {
+      "en": "Sodium Iodide",
+      "ar": "يوديد الصوديوم",
+      "fr": "Iodure de sodium"
+    },
+    "needed": [
+      "sodium",
+      "iodine"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ Na + I → NaI (Sodium Iodide) — added to your shelf!",
+        "ar": "⚪ Na + I → NaI (يوديد الصوديوم) — أُضيف إلى رفّك!",
+        "fr": "⚪ Na + I → NaI (Iodure de sodium) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "sodium_iodide"
+  },
+  {
+    "name": {
+      "en": "Zinc Chloride",
+      "ar": "كلوريد الزنك",
+      "fr": "Chlorure de zinc"
+    },
+    "needed": [
+      "chlorine",
+      "zinc"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ Cl + Zn → ZnCl₂ (Zinc Chloride) — added to your shelf!",
+        "ar": "⚪ Cl + Zn → ZnCl₂ (كلوريد الزنك) — أُضيف إلى رفّك!",
+        "fr": "⚪ Cl + Zn → ZnCl₂ (Chlorure de zinc) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "zinc_chloride"
+  },
+  {
+    "name": {
+      "en": "Calcium Chloride",
+      "ar": "كلوريد الكالسيوم",
+      "fr": "Chlorure de calcium"
+    },
+    "needed": [
+      "chlorine",
+      "calcium"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ Cl + Ca → CaCl₂ (Calcium Chloride) — added to your shelf!",
+        "ar": "⚪ Cl + Ca → CaCl₂ (كلوريد الكالسيوم) — أُضيف إلى رفّك!",
+        "fr": "⚪ Cl + Ca → CaCl₂ (Chlorure de calcium) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "calcium_chloride"
+  },
+  {
+    "name": {
+      "en": "Copper Chloride",
+      "ar": "كلوريد النحاس",
+      "fr": "Chlorure de cuivre"
+    },
+    "needed": [
+      "chlorine",
+      "copper"
+    ],
+    "result": {
+      "color": "color-green",
+      "text": {
+        "en": "🟢 Cl + Cu → CuCl₂ (Copper Chloride) — added to your shelf!",
+        "ar": "🟢 Cl + Cu → CuCl₂ (كلوريد النحاس) — أُضيف إلى رفّك!",
+        "fr": "🟢 Cl + Cu → CuCl₂ (Chlorure de cuivre) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "copper_chloride"
+  },
+  {
+    "name": {
+      "en": "Aluminum Chloride",
+      "ar": "كلوريد الألومنيوم",
+      "fr": "Chlorure d'aluminium"
+    },
+    "needed": [
+      "chlorine",
+      "aluminum"
+    ],
+    "result": {
+      "color": "color-yellow",
+      "text": {
+        "en": "🟡 Cl + Al → AlCl₃ (Aluminum Chloride) — added to your shelf!",
+        "ar": "🟡 Cl + Al → AlCl₃ (كلوريد الألومنيوم) — أُضيف إلى رفّك!",
+        "fr": "🟡 Cl + Al → AlCl₃ (Chlorure d'aluminium) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "aluminum_chloride"
+  },
+  {
+    "name": {
+      "en": "Iron(III) Chloride",
+      "ar": "كلوريد الحديد الثلاثي",
+      "fr": "Chlorure de fer (III)"
+    },
+    "needed": [
+      "chlorine",
+      "iron"
+    ],
+    "result": {
+      "color": "color-copper",
+      "text": {
+        "en": "🟤 Cl + Fe → FeCl₃ (Iron Chloride) — added to your shelf!",
+        "ar": "🟤 Cl + Fe → FeCl₃ (كلوريد الحديد) — أُضيف إلى رفّك!",
+        "fr": "🟤 Cl + Fe → FeCl₃ (Chlorure de fer) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "iron_chloride"
+  },
+  {
+    "name": {
+      "en": "Zinc Sulfide",
+      "ar": "كبريتيد الزنك",
+      "fr": "Sulfure de zinc"
+    },
+    "needed": [
+      "sulfur",
+      "zinc"
+    ],
+    "result": {
+      "color": "color-colorless",
+      "text": {
+        "en": "⚪ S + Zn → ZnS (Zinc Sulfide) — added to your shelf!",
+        "ar": "⚪ S + Zn → ZnS (كبريتيد الزنك) — أُضيف إلى رفّك!",
+        "fr": "⚪ S + Zn → ZnS (Sulfure de zinc) — ajouté à ton étagère !"
+      }
+    },
+    "heat": true,
+    "precipitate": true,
+    "bubbles": false,
+    "produces": "zinc_sulfide"
+  }
+];
 
   const EXPERIMENTS = {
-    neutralization: {
-      id: 'neutralization', difficulty: 'easy',
-      name: { en: 'Acid + Base Neutralization', ar: 'تعادل حمض وقاعدة' },
-      chemicals: ['hydrochloric_acid', 'naoh'],       // the two required chemicals (order doesn't matter)
-      distractor: 'copper_sulfate',     // an extra bottle to test "prevent incorrect combinations"
-      apparatusNeeded: ['beaker', 'burner'], // only these show on the bench for this experiment
-      effects: { color: 'color-pink', heat: true, bubbles: false, precipitate: false },
-      successMsg: { en: 'Neutralization complete — the indicator turned pink!', ar: 'اكتمل التعادل — تحوّل الكاشف إلى اللون الوردي!' },
-      explanation: {
-        en: 'HCl and NaOH react to form water and table salt (NaCl). This is exothermic, which is why you saw a temperature warning.',
-        ar: 'يتفاعل حمض الهيدروكلوريك مع هيدروكسيد الصوديوم لتكوين الماء وملح الطعام. التفاعل طارد للحرارة، ولهذا ظهر تحذير الحرارة.',
-      },
-      hint: { en: 'You need an acid and a base. Try the two clear bottles — not the blue one.', ar: 'تحتاج إلى حمض وقاعدة. جرّب الزجاجتين الشفافتين، وليس الزرقاء.' },
-      wrongMsg: { en: "Copper sulfate doesn't neutralize an acid or base — nothing happens.", ar: 'كبريتات النحاس لا تُعادل حمضًا أو قاعدة — لا يحدث شيء.' },
+  "neutralization": {
+    "id": "neutralization",
+    "difficulty": "easy",
+    "name": {
+      "en": "Acid + Base Neutralization",
+      "ar": "تعادل حمض وقاعدة",
+      "fr": "Neutralisation acide-base"
     },
-    'vinegar-soda': {
-      id: 'vinegar-soda', difficulty: 'easy',
-      name: { en: 'Vinegar + Baking Soda', ar: 'الخل وبيكربونات الصوديوم' },
-      chemicals: ['vinegar', 'baking_soda'],
-      distractor: 'naoh',
-      apparatusNeeded: ['flask'],
-      effects: { color: 'color-clear', heat: false, bubbles: true, precipitate: false },
-      successMsg: { en: "It's fizzing! Carbon dioxide gas is being released.", ar: 'إنه يفور! يتم إطلاق غاز ثاني أكسيد الكربون.' },
-      explanation: {
-        en: 'Acetic acid (vinegar) reacts with sodium bicarbonate to release CO₂ gas — those are the bubbles rising to the surface.',
-        ar: 'يتفاعل حمض الأسيتيك (الخل) مع بيكربونات الصوديوم لإطلاق غاز ثاني أكسيد الكربون — وهذه هي الفقاعات الصاعدة.',
-      },
-      hint: { en: 'Grab the vinegar and the baking soda solution — skip the sodium hydroxide.', ar: 'استخدم الخل ومحلول بيكربونات الصوديوم، وتجاهل هيدروكسيد الصوديوم.' },
-      wrongMsg: { en: 'Sodium hydroxide with vinegar just neutralizes quietly — no fizz here.', ar: 'هيدروكسيد الصوديوم مع الخل يُعادل بهدوء فقط — لا يوجد فوران هنا.' },
+    "chemicals": [
+      "hydrochloric_acid",
+      "naoh"
+    ],
+    "distractor": "copper_sulfate",
+    "apparatusNeeded": [
+      "beaker",
+      "burner"
+    ],
+    "effects": {
+      "color": "color-pink",
+      "heat": true,
+      "bubbles": false,
+      "precipitate": false
     },
-    'copper-sulfate': {
-      id: 'copper-sulfate', difficulty: 'medium',
-      name: { en: 'Copper Sulfate Reaction', ar: 'تفاعل كبريتات النحاس' },
-      chemicals: ['copper_sulfate', 'iron'],
-      distractor: 'vinegar',
-      apparatusNeeded: ['testTube'],
-      effects: { color: 'color-green', heat: false, bubbles: false, precipitate: true },
-      successMsg: { en: 'A reddish-brown precipitate is forming as the blue color fades.', ar: 'يتكوّن راسب بنّي محمر بينما يتلاشى اللون الأزرق.' },
-      explanation: {
-        en: 'Iron displaces copper from the solution (a single displacement reaction), depositing solid copper and leaving pale iron sulfate behind.',
-        ar: 'يزيح الحديد النحاس من المحلول (تفاعل إحلال أحادي)، مترسبًا نحاسًا صلبًا ومكوّنًا كبريتات حديد باهتة اللون.',
-      },
-      hint: { en: 'Iron filings dropped into the blue solution will do the trick.', ar: 'إسقاط برادة الحديد في المحلول الأزرق سيحقق التفاعل.' },
-      wrongMsg: { en: "Vinegar doesn't react with copper sulfate this way — no visible change.", ar: 'الخل لا يتفاعل مع كبريتات النحاس بهذه الطريقة — لا يوجد تغيّر ملحوظ.' },
+    "successMsg": {
+      "en": "Neutralization complete — the indicator turned pink!",
+      "ar": "اكتمل التعادل — تحوّل الكاشف إلى اللون الوردي!",
+      "fr": "Neutralisation terminée — l'indicateur est devenu rose !"
     },
-    'elephant-toothpaste': {
-      id: 'elephant-toothpaste', difficulty: 'medium',
-      name: { en: 'Elephant Toothpaste', ar: 'معجون أسنان الفيل' },
-      chemicals: ['hydrogen_peroxide', 'potassium_iodide'],
-      distractor: 'vinegar',
-      apparatusNeeded: ['flask'],
-      effects: { color: 'color-amber', heat: false, bubbles: false, precipitate: false, foam: true },
-      successMsg: { en: 'Foam is erupting out of the flask!', ar: 'الرغوة تنفجر خارج الدورق!' },
-      explanation: {
-        en: 'Potassium iodide rapidly breaks down the hydrogen peroxide, releasing oxygen gas so fast it whips the solution into a giant foam.',
-        ar: 'يوديد البوتاسيوم يحلل بيروكسيد الهيدروجين بسرعة، مطلقًا غاز الأكسجين بسرعة كبيرة تحوّل المحلول إلى رغوة ضخمة.',
-      },
-      hint: { en: 'Hydrogen peroxide needs a catalyst to erupt — skip the vinegar.', ar: 'بيروكسيد الهيدروجين يحتاج عامل حفّاز لينفجر — تجاهل الخل.' },
-      wrongMsg: { en: "Vinegar doesn't catalyze peroxide breakdown — no eruption.", ar: 'الخل لا يحفّز تحلل البيروكسيد — لا يوجد انفجار.' },
+    "explanation": {
+      "en": "HCl and NaOH react to form water and table salt (NaCl). This is exothermic, which is why you saw a temperature warning.",
+      "ar": "يتفاعل حمض الهيدروكلوريك مع هيدروكسيد الصوديوم لتكوين الماء وملح الطعام. التفاعل طارد للحرارة، ولهذا ظهر تحذير الحرارة.",
+      "fr": "HCl et NaOH réagissent pour former de l'eau et du sel de table (NaCl). C'est exothermique, d'où l'avertissement de température."
     },
-    'dry-ice-fog': {
-      id: 'dry-ice-fog', difficulty: 'easy',
-      name: { en: 'Dry Ice Fog', ar: 'ضباب الثلج الجاف' },
-      chemicals: ['dry_ice', 'warm_water'],
-      distractor: 'baking_soda',
-      apparatusNeeded: ['beaker'],
-      effects: { color: 'color-clear', heat: false, bubbles: false, precipitate: false, vapor: true },
-      successMsg: { en: 'Thick white fog is billowing out of the beaker!', ar: 'ضباب أبيض كثيف يتصاعد من الكأس!' },
-      explanation: {
-        en: 'Dry ice sublimates straight from solid to gas. Warm water speeds this up, and the cold CO₂ condenses moisture in the air into visible fog.',
-        ar: 'يتسامى الثلج الجاف من صلب إلى غاز مباشرة. الماء الدافئ يسرّع هذا التسامي، وثاني أكسيد الكربون البارد يكثّف رطوبة الهواء إلى ضباب مرئي.',
-      },
-      hint: { en: 'Dry ice needs warm water to fog up fast — skip the baking soda.', ar: 'الثلج الجاف يحتاج ماءً دافئًا ليتصاعد الضباب بسرعة — تجاهل بيكربونات الصوديوم.' },
-      wrongMsg: { en: "Baking soda doesn't speed up sublimation — barely any fog.", ar: 'بيكربونات الصوديوم لا تسرّع التسامي — لا يوجد ضباب يُذكر.' },
+    "hint": {
+      "en": "You need an acid and a base. Try the two clear bottles — not the blue one.",
+      "ar": "تحتاج إلى حمض وقاعدة. جرّب الزجاجتين الشفافتين، وليس الزرقاء.",
+      "fr": "Il te faut un acide et une base. Essaie les deux flacons transparents — pas le bleu."
     },
-    'glowing-luminol': {
-      id: 'glowing-luminol', difficulty: 'hard',
-      name: { en: 'Glowing Luminol', ar: 'اللومينول المتوهج' },
-      chemicals: ['luminol', 'hydrogen_peroxide'],
-      distractor: 'iron',
-      apparatusNeeded: ['testTube'],
-      effects: { color: 'color-green', heat: false, bubbles: false, precipitate: false, glow: true },
-      successMsg: { en: 'The solution is glowing blue-green!', ar: 'المحلول يتوهج بلون أزرق مخضر!' },
-      explanation: {
-        en: 'Oxidizing luminol releases energy as light instead of heat — this "chemiluminescence" is the same glow forensic teams use to find trace blood.',
-        ar: 'أكسدة اللومينول تُطلق الطاقة على شكل ضوء بدلًا من حرارة — هذا "التوهج الكيميائي" هو نفسه الذي تستخدمه الفرق الجنائية للعثور على آثار الدم.',
-      },
-      hint: { en: "Luminol needs an oxidizer to glow — the iron filings won't do it.", ar: 'اللومينول يحتاج مؤكسدًا ليتوهج — برادة الحديد لن تفعل ذلك.' },
-      wrongMsg: { en: "Iron doesn't oxidize luminol this way — no glow.", ar: 'الحديد لا يؤكسد اللومينول بهذه الطريقة — لا يوجد توهج.' },
+    "wrongMsg": {
+      "en": "Copper sulfate doesn't neutralize an acid or base — nothing happens.",
+      "ar": "كبريتات النحاس لا تُعادل حمضًا أو قاعدة — لا يحدث شيء.",
+      "fr": "Le sulfate de cuivre ne neutralise ni un acide ni une base — rien ne se passe."
+    }
+  },
+  "vinegar-soda": {
+    "id": "vinegar-soda",
+    "difficulty": "easy",
+    "name": {
+      "en": "Vinegar + Baking Soda",
+      "ar": "الخل وبيكربونات الصوديوم",
+      "fr": "Vinaigre + Bicarbonate de soude"
     },
-
-    // === NEW 10 EXPERIMENTS ===
-    'iron-sulfur': {
-      id: 'iron-sulfur', difficulty: 'medium',
-      name: { en: 'Iron + Sulfur (Exothermic)', ar: 'الحديد والكبريت (طارد للحرارة)' },
-      chemicals: ['iron', 'sulfur'],
-      distractor: 'zinc',
-      apparatusNeeded: ['testTube', 'burner'],
-      effects: { color: 'color-colorless', heat: true, bubbles: false, precipitate: false },
-      successMsg: { en: 'Black iron sulfide forms — the test tube is hot!', ar: 'تتكوّن كبريتيد الحديد الأسود — الأنبوب ساخن!' },
-      explanation: {
-        en: 'When heated, iron and sulfur combine directly to form iron sulfide (FeS), a black solid. This is a synthesis reaction that releases significant heat.',
-        ar: 'عند التسخين، يتحد الحديد والكبريت مباشرة لتكوين كبريتيد الحديد (FeS)، وهو صلب أسود. هذا تفاعل تركيبي يطلق حرارة كبيرة.',
-      },
-      hint: { en: "Heat iron and sulfur powder together — zinc won't react the same way.", ar: 'سخّن مسحوق الحديد والكبريت معًا — الزنك لن يتفاعل بنفس الطريقة.' },
-      wrongMsg: { en: "Zinc and sulfur don't combine readily at this temperature.", ar: 'الزنك والكبريت لا يتحدان بسهولة عند هذه درجة الحرارة.' },
+    "chemicals": [
+      "vinegar",
+      "baking_soda"
+    ],
+    "distractor": "naoh",
+    "apparatusNeeded": [
+      "flask"
+    ],
+    "effects": {
+      "color": "color-clear",
+      "heat": false,
+      "bubbles": true,
+      "precipitate": false
     },
-
-    'sodium-water': {
-      id: 'sodium-water', difficulty: 'hard',
-      name: { en: 'Sodium + Water (Vigorous)', ar: 'الصوديوم والماء (عنيف)' },
-      chemicals: ['sodium', 'water'],
-      distractor: 'potassium',
-      apparatusNeeded: ['beaker'],
-      effects: { color: 'color-pink', heat: true, bubbles: true, foam: true },
-      successMsg: { en: 'Sodium skitters across the water, bursting into flames!', ar: 'الصوديوم ينزلق عبر الماء، منفجرًا في اللهب!' },
-      explanation: {
-        en: "Sodium reacts violently with water: 2Na + 2H₂O → 2NaOH + H₂↑. The reaction is so exothermic it ignites the hydrogen gas. Never do this with potassium—it's even more dangerous!",
-        ar: 'يتفاعل الصوديوم بشدة مع الماء: 2Na + 2H₂O → 2NaOH + H₂↑. التفاعل طارد للحرارة جدًا يشعل غاز الهيدروجين. لا تحاول هذا مع البوتاسيوم—فهو أخطر بكثير!',
-      },
-      hint: { en: 'Sodium is highly reactive with water — potassium is even worse!', ar: 'الصوديوم متفاعل جدًا مع الماء — البوتاسيوم أسوأ بكثير!' },
-      wrongMsg: { en: 'Potassium reacts violently with water — too dangerous for this experiment.', ar: 'البوتاسيوم يتفاعل بشدة مع الماء — خطير جدًا لهذه التجربة.' },
+    "successMsg": {
+      "en": "It's fizzing! Carbon dioxide gas is being released.",
+      "ar": "إنه يفور! يتم إطلاق غاز ثاني أكسيد الكربون.",
+      "fr": "Ça pétille ! Du dioxyde de carbone est libéré."
     },
-
-    'calcium-water': {
-      id: 'calcium-water', difficulty: 'medium',
-      name: { en: 'Calcium + Water', ar: 'الكالسيوم والماء' },
-      chemicals: ['calcium', 'water'],
-      distractor: 'naoh',
-      apparatusNeeded: ['beaker'],
-      effects: { color: 'color-clear', heat: false, bubbles: true, foam: true },
-      successMsg: { en: 'Calcium reacts with water, producing hydrogen gas bubbles!', ar: 'يتفاعل الكالسيوم مع الماء، منتجًا فقاعات غاز الهيدروجين!' },
-      explanation: {
-        en: 'Calcium is less reactive than sodium. It slowly reacts with water: Ca + 2H₂O → Ca(OH)₂ + H₂↑. The reaction is much calmer and less exothermic.',
-        ar: 'الكالسيوم أقل تفاعلاً من الصوديوم. يتفاعل ببطء مع الماء: Ca + 2H₂O → Ca(OH)₂ + H₂↑. التفاعل أهدأ وأقل طرداً للحرارة.',
-      },
-      hint: { en: 'Calcium reacts with water — sodium hydroxide won\'t show the same effect.', ar: 'الكالسيوم يتفاعل مع الماء — هيدروكسيد الصوديوم لن يُظهر نفس التأثير.' },
-      wrongMsg: { en: 'Sodium hydroxide dissolves but doesn\'t react the same way.', ar: 'هيدروكسيد الصوديوم ينحل لكن لا يتفاعل بنفس الطريقة.' },
+    "explanation": {
+      "en": "Acetic acid (vinegar) reacts with sodium bicarbonate to release CO₂ gas — those are the bubbles rising to the surface.",
+      "ar": "يتفاعل حمض الأسيتيك (الخل) مع بيكربونات الصوديوم لإطلاق غاز ثاني أكسيد الكربون — وهذه هي الفقاعات الصاعدة.",
+      "fr": "L'acide acétique (vinaigre) réagit avec le bicarbonate de sodium pour libérer du gaz CO₂ — ce sont les bulles qui remontent à la surface."
     },
-
-    'copper-nitric-acid': {
-      id: 'copper-nitric-acid', difficulty: 'hard',
-      name: { en: 'Copper + Nitric Acid', ar: 'النحاس وحمض النيتريك' },
-      chemicals: ['copper', 'nitric_acid'],
-      distractor: 'sulfuric_acid',
-      apparatusNeeded: ['testTube'],
-      effects: { color: 'color-copper', heat: true, bubbles: true, vapor: true },
-      successMsg: { en: 'Copper dissolves, releasing brown nitrogen dioxide gas!', ar: 'ينحل النحاس، مطلقًا غاز ثاني أكسيد النيتروجين البني!' },
-      explanation: {
-        en: '3Cu + 8HNO₃(dilute) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O. The brown NO₂ gas is toxic. Concentrated nitric acid is even more aggressive.',
-        ar: '3Cu + 8HNO₃(مخفّف) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O. غاز NO₂ البني سام. حمض النيتريك المركز أكثر عدوانية.',
-      },
-      hint: { en: "Copper reacts with nitric acid to release brown fumes — sulfuric acid won't do this.", ar: 'يتفاعل النحاس مع حمض النيتريك لإطلاق دخان بني — حمض الكبريتيك لن يفعل هذا.' },
-      wrongMsg: { en: 'Sulfuric acid reacts with copper differently — no brown gas here.', ar: 'يتفاعل حمض الكبريتيك مع النحاس بشكل مختلف — لا يوجد غاز بني هنا.' },
+    "hint": {
+      "en": "Grab the vinegar and the baking soda solution — skip the sodium hydroxide.",
+      "ar": "استخدم الخل ومحلول بيكربونات الصوديوم، وتجاهل هيدروكسيد الصوديوم.",
+      "fr": "Prends le vinaigre et la solution de bicarbonate de soude — évite l'hydroxyde de sodium."
     },
-
-    'zinc-copper-displacement': {
-      id: 'zinc-copper-displacement', difficulty: 'easy',
-      name: { en: 'Zinc + Copper Sulfate', ar: 'الزنك وكبريتات النحاس' },
-      chemicals: ['zinc', 'copper_sulfate'],
-      distractor: 'iron',
-      apparatusNeeded: ['testTube'],
-      effects: { color: 'color-red', heat: false, bubbles: false, precipitate: true },
-      successMsg: { en: 'Copper deposits on the zinc as the blue solution fades to colorless!', ar: 'يترسب النحاس على الزنك بينما يتلاشى المحلول الأزرق!' },
-      explanation: {
-        en: 'Zinc is more reactive than copper. Zn + CuSO₄ → ZnSO₄ + Cu↓. A displacement reaction where zinc "steals" the sulfate from copper.',
-        ar: 'الزنك أكثر تفاعلاً من النحاس. Zn + CuSO₄ → ZnSO₄ + Cu↓. تفاعل إحلال حيث يزيح الزنك كبريتات من النحاس.',
-      },
-      hint: { en: "Zinc is more reactive than copper — iron won't displace copper this way.", ar: 'الزنك أكثر تفاعلاً من النحاس — الحديد لن يزيح النحاس بهذه الطريقة.' },
-      wrongMsg: { en: 'Iron is less reactive than copper — no displacement occurs.', ar: 'الحديد أقل تفاعلاً من النحاس — لا يحدث إزاحة.' },
+    "wrongMsg": {
+      "en": "Sodium hydroxide with vinegar just neutralizes quietly — no fizz here.",
+      "ar": "هيدروكسيد الصوديوم مع الخل يُعادل بهدوء فقط — لا يوجد فوران هنا.",
+      "fr": "L'hydroxyde de sodium avec le vinaigre ne fait que neutraliser calmement — pas de pétillement ici."
+    }
+  },
+  "copper-sulfate": {
+    "id": "copper-sulfate",
+    "difficulty": "medium",
+    "name": {
+      "en": "Copper Sulfate Reaction",
+      "ar": "تفاعل كبريتات النحاس",
+      "fr": "Réaction du sulfate de cuivre"
     },
-
-    'lead-iodide': {
-      id: 'lead-iodide', difficulty: 'medium',
-      name: { en: 'Lead Nitrate + Potassium Iodide', ar: 'نترات الرصاص + يوديد البوتاسيوم' },
-      chemicals: ['lead_nitrate', 'potassium_iodide'],
-      distractor: 'sodium_chloride',
-      apparatusNeeded: ['beaker'],
-      effects: { color: 'color-yellow', heat: false, bubbles: false, precipitate: true },
-      successMsg: { en: 'A bright yellow precipitate of lead iodide forms!', ar: 'يتكوّن راسب أصفر ساطع من يوديد الرصاص!' },
-      explanation: {
-        en: 'Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃. Lead iodide is a striking yellow solid that forms instantly when the two solutions mix.',
-        ar: 'Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃. يوديد الرصاص صلب أصفر ساطع يتكون فوراً عند خلط المحلولين.',
-      },
-      hint: { en: "Lead nitrate reacts with iodide — sodium chloride won't give a yellow precipitate.", ar: 'نترات الرصاص تتفاعل مع اليوديد — كلوريد الصوديوم لن ينتج راسب أصفر.' },
-      wrongMsg: { en: "Sodium chloride with lead nitrate doesn't produce a yellow precipitate.", ar: 'كلوريد الصوديوم مع نترات الرصاص لا ينتج راسب أصفر.' },
+    "chemicals": [
+      "copper_sulfate",
+      "iron"
+    ],
+    "distractor": "vinegar",
+    "apparatusNeeded": [
+      "testTube"
+    ],
+    "effects": {
+      "color": "color-green",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": true
     },
-
-    'starch-iodine': {
-      id: 'starch-iodine', difficulty: 'easy',
-      name: { en: 'Starch + Iodine (Color)', ar: 'النشا واليود (اللون)' },
-      chemicals: ['starch', 'iodine'],
-      distractor: 'glucose',
-      apparatusNeeded: ['beaker'],
-      effects: { color: 'color-blue', heat: false, bubbles: false, precipitate: false },
-      successMsg: { en: 'The mixture turns deep blue-black — the classic starch-iodine test!', ar: 'يتحول الخليط إلى أزرق-أسود عميق — اختبار النشا-اليود الكلاسيكي!' },
-      explanation: {
-        en: 'Iodine molecules fit inside the helical structure of starch, creating a blue-black complex. This is a famous test to detect starch in food.',
-        ar: 'تتناسب جزيئات اليود داخل البنية الحلزونية للنشا، مما ينشئ معقد أزرق-أسود. هذا اختبار مشهور للكشف عن النشا في الغذاء.',
-      },
-      hint: { en: "Iodine forms a dark complex with starch — glucose won't give the same color.", ar: 'يكون اليود معقد داكن مع النشا — الجلوكوز لن يعطي نفس اللون.' },
-      wrongMsg: { en: "Glucose doesn't turn blue-black with iodine — no color change.", ar: 'الجلوكوز لا يتحول إلى أزرق-أسود مع اليود — لا تغيير في اللون.' },
+    "successMsg": {
+      "en": "A reddish-brown precipitate is forming as the blue color fades.",
+      "ar": "يتكوّن راسب بنّي محمر بينما يتلاشى اللون الأزرق.",
+      "fr": "Un précipité brun-rougeâtre se forme pendant que la couleur bleue s'estompe."
     },
-
-    'manganese-h2o2': {
-      id: 'manganese-h2o2', difficulty: 'medium',
-      name: { en: 'Manganese Dioxide Catalyst', ar: 'عامل MnO₂ الحفّاز' },
-      chemicals: ['manganese_dioxide', 'hydrogen_peroxide'],
-      distractor: 'iron_oxide',
-      apparatusNeeded: ['flask'],
-      effects: { color: 'color-clear', heat: false, bubbles: true, foam: false },
-      successMsg: { en: 'Vigorous bubbling! Oxygen gas is released rapidly.', ar: 'فوران عنيف! يتم إطلاق غاز الأكسجين بسرعة.' },
-      explanation: {
-        en: "2H₂O₂ → 2H₂O + O₂↑. MnO₂ acts as a catalyst, speeding up decomposition without being consumed. Iron oxide doesn't catalyze this reaction.",
-        ar: '2H₂O₂ → 2H₂O + O₂↑. يعمل MnO₂ كعامل حفّاز، يسرع التحلل دون أن يُستهلك. أكسيد الحديد لا يحفز هذا التفاعل.',
-      },
-      hint: { en: "Manganese dioxide is a catalyst for H₂O₂ decomposition — iron oxide won't work.", ar: 'ثاني أكسيد المنجنيز عامل حفّاز لتحلل بيروكسيد الهيدروجين — أكسيد الحديد لن ينجح.' },
-      wrongMsg: { en: "Iron oxide doesn't effectively catalyze hydrogen peroxide decomposition.", ar: 'أكسيد الحديد لا يحفز بفعالية تحلل بيروكسيد الهيدروجين.' },
+    "explanation": {
+      "en": "Iron displaces copper from the solution (a single displacement reaction), depositing solid copper and leaving pale iron sulfate behind.",
+      "ar": "يزيح الحديد النحاس من المحلول (تفاعل إحلال أحادي)، مترسبًا نحاسًا صلبًا ومكوّنًا كبريتات حديد باهتة اللون.",
+      "fr": "Le fer déplace le cuivre de la solution (une réaction de déplacement simple), déposant du cuivre solide et laissant du sulfate de fer pâle."
     },
-
-    'sugar-h2so4': {
-      id: 'sugar-h2so4', difficulty: 'hard',
-      name: { en: 'Sugar + Sulfuric Acid (Dehydration)', ar: 'السكر وحمض الكبريتيك (الجفاف)' },
-      chemicals: ['sugar', 'sulfuric_acid'],
-      distractor: 'hydrochloric_acid',
-      apparatusNeeded: ['beaker', 'burner'],
-      effects: { color: 'color-black', heat: true, bubbles: true, foam: true },
-      successMsg: { en: 'The sugar blackens into charcoal as water boils off!', ar: 'يتحول السكر إلى فحم أسود بينما يتبخر الماء!' },
-      explanation: {
-        en: 'C₁₂H₂₂O₁₁ -H₂SO₄→ 12C + H₂O (steam). Sulfuric acid dehydrates the sugar, removing all water and leaving pure carbon. This is a dramatic exothermic reaction!',
-        ar: 'C₁₂H₂₂O₁₁ -H₂SO₄→ 12C + H₂O (بخار). يجفف حمض الكبريتيك السكر، مزيلاً كل الماء تاركاً كربون نقي. هذا تفاعل طارد للحرارة درامي!' },
-      hint: { en: "Concentrated sulfuric acid dehydrates sugar — hydrochloric acid won't have the same effect.", ar: 'حمض الكبريتيك المركز يجفف السكر — حمض الهيدروكلوريك لن يكون له نفس التأثير.' },
-      wrongMsg: { en: "Hydrochloric acid doesn't dehydrate sugar effectively — the dramatic blackening won't occur.", ar: 'حمض الهيدروكلوريك لا يجفف السكر بفعالية — الاسوداد الدرامي لن يحدث.' },
+    "hint": {
+      "en": "Iron filings dropped into the blue solution will do the trick.",
+      "ar": "إسقاط برادة الحديد في المحلول الأزرق سيحقق التفاعل.",
+      "fr": "De la limaille de fer versée dans la solution bleue fera l'affaire."
     },
-
-    'aluminum-naoh': {
-      id: 'aluminum-naoh', difficulty: 'hard',
-      name: { en: 'Aluminum + Sodium Hydroxide', ar: 'الألومنيوم وهيدروكسيد الصوديوم' },
-      chemicals: ['aluminum', 'naoh'],
-      distractor: 'vinegar',
-      apparatusNeeded: ['flask'],
-      effects: { color: 'color-clear', heat: true, bubbles: true, foam: true },
-      successMsg: { en: 'Rapid bubbling of hydrogen gas — the flask gets hot!', ar: 'فوران سريع لغاز الهيدروجين — يسخن الدورق!' },
-      explanation: {
-        en: '2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑. Aluminum is amphoteric—it reacts with both acids AND bases. The reaction is exothermic.',
-        ar: '2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑. الألومنيوم مادة برمائية—تتفاعل مع الحمضيات والقواعد. التفاعل طارد للحرارة.',
-      },
-      hint: { en: "Aluminum reacts with bases, not acids — vinegar won't work the same way.", ar: 'يتفاعل الألومنيوم مع القواعد وليس الحمضيات — الخل لن ينجح بنفس الطريقة.' },
-      wrongMsg: { en: 'Vinegar is too weak — aluminum needs a strong base like sodium hydroxide.', ar: 'الخل ضعيف جداً — يحتاج الألومنيوم إلى قاعدة قوية مثل هيدروكسيد الصوديوم.' },
+    "wrongMsg": {
+      "en": "Vinegar doesn't react with copper sulfate this way — no visible change.",
+      "ar": "الخل لا يتفاعل مع كبريتات النحاس بهذه الطريقة — لا يوجد تغيّر ملحوظ.",
+      "fr": "Le vinaigre ne réagit pas ainsi avec le sulfate de cuivre — aucun changement visible."
+    }
+  },
+  "elephant-toothpaste": {
+    "id": "elephant-toothpaste",
+    "difficulty": "medium",
+    "name": {
+      "en": "Elephant Toothpaste",
+      "ar": "معجون أسنان الفيل",
+      "fr": "Dentifrice d'éléphant"
     },
-  };
+    "chemicals": [
+      "hydrogen_peroxide",
+      "potassium_iodide"
+    ],
+    "distractor": "vinegar",
+    "apparatusNeeded": [
+      "flask"
+    ],
+    "effects": {
+      "color": "color-amber",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": false,
+      "foam": true
+    },
+    "successMsg": {
+      "en": "Foam is erupting out of the flask!",
+      "ar": "الرغوة تنفجر خارج الدورق!",
+      "fr": "De la mousse jaillit du flacon !"
+    },
+    "explanation": {
+      "en": "Potassium iodide rapidly breaks down the hydrogen peroxide, releasing oxygen gas so fast it whips the solution into a giant foam.",
+      "ar": "يوديد البوتاسيوم يحلل بيروكسيد الهيدروجين بسرعة، مطلقًا غاز الأكسجين بسرعة كبيرة تحوّل المحلول إلى رغوة ضخمة.",
+      "fr": "L'iodure de potassium décompose rapidement le peroxyde d'hydrogène, libérant du gaz oxygène si vite qu'il transforme la solution en mousse géante."
+    },
+    "hint": {
+      "en": "Hydrogen peroxide needs a catalyst to erupt — skip the vinegar.",
+      "ar": "بيروكسيد الهيدروجين يحتاج عامل حفّاز لينفجر — تجاهل الخل.",
+      "fr": "Le peroxyde d'hydrogène a besoin d'un catalyseur pour exploser — évite le vinaigre."
+    },
+    "wrongMsg": {
+      "en": "Vinegar doesn't catalyze peroxide breakdown — no eruption.",
+      "ar": "الخل لا يحفّز تحلل البيروكسيد — لا يوجد انفجار.",
+      "fr": "Le vinaigre ne catalyse pas la décomposition du peroxyde — pas d'éruption."
+    }
+  },
+  "dry-ice-fog": {
+    "id": "dry-ice-fog",
+    "difficulty": "easy",
+    "name": {
+      "en": "Dry Ice Fog",
+      "ar": "ضباب الثلج الجاف",
+      "fr": "Brouillard de glace carbonique"
+    },
+    "chemicals": [
+      "dry_ice",
+      "warm_water"
+    ],
+    "distractor": "baking_soda",
+    "apparatusNeeded": [
+      "beaker"
+    ],
+    "effects": {
+      "color": "color-clear",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": false,
+      "vapor": true
+    },
+    "successMsg": {
+      "en": "Thick white fog is billowing out of the beaker!",
+      "ar": "ضباب أبيض كثيف يتصاعد من الكأس!",
+      "fr": "Un épais brouillard blanc jaillit du bécher !"
+    },
+    "explanation": {
+      "en": "Dry ice sublimates straight from solid to gas. Warm water speeds this up, and the cold CO₂ condenses moisture in the air into visible fog.",
+      "ar": "يتسامى الثلج الجاف من صلب إلى غاز مباشرة. الماء الدافئ يسرّع هذا التسامي، وثاني أكسيد الكربون البارد يكثّف رطوبة الهواء إلى ضباب مرئي.",
+      "fr": "La glace carbonique se sublime directement du solide au gaz. L'eau tiède accélère ce processus, et le CO₂ froid condense l'humidité de l'air en un brouillard visible."
+    },
+    "hint": {
+      "en": "Dry ice needs warm water to fog up fast — skip the baking soda.",
+      "ar": "الثلج الجاف يحتاج ماءً دافئًا ليتصاعد الضباب بسرعة — تجاهل بيكربونات الصوديوم.",
+      "fr": "La glace carbonique a besoin d'eau tiède pour fumer rapidement — évite le bicarbonate de soude."
+    },
+    "wrongMsg": {
+      "en": "Baking soda doesn't speed up sublimation — barely any fog.",
+      "ar": "بيكربونات الصوديوم لا تسرّع التسامي — لا يوجد ضباب يُذكر.",
+      "fr": "Le bicarbonate de soude n'accélère pas la sublimation — presque pas de brouillard."
+    }
+  },
+  "glowing-luminol": {
+    "id": "glowing-luminol",
+    "difficulty": "hard",
+    "name": {
+      "en": "Glowing Luminol",
+      "ar": "اللومينول المتوهج",
+      "fr": "Luminol lumineux"
+    },
+    "chemicals": [
+      "luminol",
+      "hydrogen_peroxide"
+    ],
+    "distractor": "iron",
+    "apparatusNeeded": [
+      "testTube"
+    ],
+    "effects": {
+      "color": "color-green",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": false,
+      "glow": true
+    },
+    "successMsg": {
+      "en": "The solution is glowing blue-green!",
+      "ar": "المحلول يتوهج بلون أزرق مخضر!",
+      "fr": "La solution brille en bleu-vert !"
+    },
+    "explanation": {
+      "en": "Oxidizing luminol releases energy as light instead of heat — this \"chemiluminescence\" is the same glow forensic teams use to find trace blood.",
+      "ar": "أكسدة اللومينول تُطلق الطاقة على شكل ضوء بدلًا من حرارة — هذا \"التوهج الكيميائي\" هو نفسه الذي تستخدمه الفرق الجنائية للعثور على آثار الدم.",
+      "fr": "L'oxydation du luminol libère de l'énergie sous forme de lumière plutôt que de chaleur — cette « chimiluminescence » est la même lueur utilisée par la police scientifique pour trouver des traces de sang."
+    },
+    "hint": {
+      "en": "Luminol needs an oxidizer to glow — the iron filings won't do it.",
+      "ar": "اللومينول يحتاج مؤكسدًا ليتوهج — برادة الحديد لن تفعل ذلك.",
+      "fr": "Le luminol a besoin d'un oxydant pour briller — la limaille de fer n'y arrivera pas."
+    },
+    "wrongMsg": {
+      "en": "Iron doesn't oxidize luminol this way — no glow.",
+      "ar": "الحديد لا يؤكسد اللومينول بهذه الطريقة — لا يوجد توهج.",
+      "fr": "Le fer n'oxyde pas le luminol de cette façon — pas de lueur."
+    }
+  },
+  "iron-sulfur": {
+    "id": "iron-sulfur",
+    "difficulty": "medium",
+    "name": {
+      "en": "Iron + Sulfur (Exothermic)",
+      "ar": "الحديد والكبريت (طارد للحرارة)",
+      "fr": "Fer + Soufre (exothermique)"
+    },
+    "chemicals": [
+      "iron",
+      "sulfur"
+    ],
+    "distractor": "zinc",
+    "apparatusNeeded": [
+      "testTube",
+      "burner"
+    ],
+    "effects": {
+      "color": "color-colorless",
+      "heat": true,
+      "bubbles": false,
+      "precipitate": false
+    },
+    "successMsg": {
+      "en": "Black iron sulfide forms — the test tube is hot!",
+      "ar": "تتكوّن كبريتيد الحديد الأسود — الأنبوب ساخن!",
+      "fr": "Du sulfure de fer noir se forme — le tube à essai est chaud !"
+    },
+    "explanation": {
+      "en": "When heated, iron and sulfur combine directly to form iron sulfide (FeS), a black solid. This is a synthesis reaction that releases significant heat.",
+      "ar": "عند التسخين، يتحد الحديد والكبريت مباشرة لتكوين كبريتيد الحديد (FeS)، وهو صلب أسود. هذا تفاعل تركيبي يطلق حرارة كبيرة.",
+      "fr": "Chauffés, le fer et le soufre se combinent directement pour former du sulfure de fer (FeS), un solide noir. C'est une réaction de synthèse qui libère beaucoup de chaleur."
+    },
+    "hint": {
+      "en": "Heat iron and sulfur powder together — zinc won't react the same way.",
+      "ar": "سخّن مسحوق الحديد والكبريت معًا — الزنك لن يتفاعل بنفس الطريقة.",
+      "fr": "Chauffe ensemble la poudre de fer et de soufre — le zinc ne réagira pas de la même façon."
+    },
+    "wrongMsg": {
+      "en": "Zinc and sulfur don't combine readily at this temperature.",
+      "ar": "الزنك والكبريت لا يتحدان بسهولة عند هذه درجة الحرارة.",
+      "fr": "Le zinc et le soufre ne se combinent pas facilement à cette température."
+    }
+  },
+  "sodium-water": {
+    "id": "sodium-water",
+    "difficulty": "hard",
+    "name": {
+      "en": "Sodium + Water (Vigorous)",
+      "ar": "الصوديوم والماء (عنيف)",
+      "fr": "Sodium + Eau (violent)"
+    },
+    "chemicals": [
+      "sodium",
+      "water"
+    ],
+    "distractor": "potassium",
+    "apparatusNeeded": [
+      "beaker"
+    ],
+    "effects": {
+      "color": "color-pink",
+      "heat": true,
+      "bubbles": true,
+      "foam": true
+    },
+    "successMsg": {
+      "en": "Sodium skitters across the water, bursting into flames!",
+      "ar": "الصوديوم ينزلق عبر الماء، منفجرًا في اللهب!",
+      "fr": "Le sodium file à la surface de l'eau en s'enflammant !"
+    },
+    "explanation": {
+      "en": "Sodium reacts violently with water: 2Na + 2H₂O → 2NaOH + H₂↑. The reaction is so exothermic it ignites the hydrogen gas. Never do this with potassium—it's even more dangerous!",
+      "ar": "يتفاعل الصوديوم بشدة مع الماء: 2Na + 2H₂O → 2NaOH + H₂↑. التفاعل طارد للحرارة جدًا يشعل غاز الهيدروجين. لا تحاول هذا مع البوتاسيوم—فهو أخطر بكثير!",
+      "fr": "Le sodium réagit violemment avec l'eau : 2Na + 2H₂O → 2NaOH + H₂↑. La réaction est si exothermique qu'elle enflamme l'hydrogène gazeux. Ne fais jamais ça avec du potassium — c'est encore plus dangereux !"
+    },
+    "hint": {
+      "en": "Sodium is highly reactive with water — potassium is even worse!",
+      "ar": "الصوديوم متفاعل جدًا مع الماء — البوتاسيوم أسوأ بكثير!",
+      "fr": "Le sodium est très réactif avec l'eau — le potassium est encore pire !"
+    },
+    "wrongMsg": {
+      "en": "Potassium reacts violently with water — too dangerous for this experiment.",
+      "ar": "البوتاسيوم يتفاعل بشدة مع الماء — خطير جدًا لهذه التجربة.",
+      "fr": "Le potassium réagit violemment avec l'eau — trop dangereux pour cette expérience."
+    }
+  },
+  "calcium-water": {
+    "id": "calcium-water",
+    "difficulty": "medium",
+    "name": {
+      "en": "Calcium + Water",
+      "ar": "الكالسيوم والماء",
+      "fr": "Calcium + Eau"
+    },
+    "chemicals": [
+      "calcium",
+      "water"
+    ],
+    "distractor": "naoh",
+    "apparatusNeeded": [
+      "beaker"
+    ],
+    "effects": {
+      "color": "color-clear",
+      "heat": false,
+      "bubbles": true,
+      "foam": true
+    },
+    "successMsg": {
+      "en": "Calcium reacts with water, producing hydrogen gas bubbles!",
+      "ar": "يتفاعل الكالسيوم مع الماء، منتجًا فقاعات غاز الهيدروجين!",
+      "fr": "Le calcium réagit avec l'eau, produisant des bulles d'hydrogène !"
+    },
+    "explanation": {
+      "en": "Calcium is less reactive than sodium. It slowly reacts with water: Ca + 2H₂O → Ca(OH)₂ + H₂↑. The reaction is much calmer and less exothermic.",
+      "ar": "الكالسيوم أقل تفاعلاً من الصوديوم. يتفاعل ببطء مع الماء: Ca + 2H₂O → Ca(OH)₂ + H₂↑. التفاعل أهدأ وأقل طرداً للحرارة.",
+      "fr": "Le calcium est moins réactif que le sodium. Il réagit lentement avec l'eau : Ca + 2H₂O → Ca(OH)₂ + H₂↑. La réaction est bien plus calme et moins exothermique."
+    },
+    "hint": {
+      "en": "Calcium reacts with water — sodium hydroxide won't show the same effect.",
+      "ar": "الكالسيوم يتفاعل مع الماء — هيدروكسيد الصوديوم لن يُظهر نفس التأثير.",
+      "fr": "Le calcium réagit avec l'eau — l'hydroxyde de sodium ne donnera pas le même effet."
+    },
+    "wrongMsg": {
+      "en": "Sodium hydroxide dissolves but doesn't react the same way.",
+      "ar": "هيدروكسيد الصوديوم ينحل لكن لا يتفاعل بنفس الطريقة.",
+      "fr": "L'hydroxyde de sodium se dissout mais ne réagit pas de la même façon."
+    }
+  },
+  "copper-nitric-acid": {
+    "id": "copper-nitric-acid",
+    "difficulty": "hard",
+    "name": {
+      "en": "Copper + Nitric Acid",
+      "ar": "النحاس وحمض النيتريك",
+      "fr": "Cuivre + Acide nitrique"
+    },
+    "chemicals": [
+      "copper",
+      "nitric_acid"
+    ],
+    "distractor": "sulfuric_acid",
+    "apparatusNeeded": [
+      "testTube"
+    ],
+    "effects": {
+      "color": "color-copper",
+      "heat": true,
+      "bubbles": true,
+      "vapor": true
+    },
+    "successMsg": {
+      "en": "Copper dissolves, releasing brown nitrogen dioxide gas!",
+      "ar": "ينحل النحاس، مطلقًا غاز ثاني أكسيد النيتروجين البني!",
+      "fr": "Le cuivre se dissout, libérant du dioxyde d'azote brun !"
+    },
+    "explanation": {
+      "en": "3Cu + 8HNO₃(dilute) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O. The brown NO₂ gas is toxic. Concentrated nitric acid is even more aggressive.",
+      "ar": "3Cu + 8HNO₃(مخفّف) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O. غاز NO₂ البني سام. حمض النيتريك المركز أكثر عدوانية.",
+      "fr": "3Cu + 8HNO₃(dilué) → 3Cu(NO₃)₂ + 2NO↑ + 4H₂O. Le gaz NO₂ brun est toxique. L'acide nitrique concentré est encore plus agressif."
+    },
+    "hint": {
+      "en": "Copper reacts with nitric acid to release brown fumes — sulfuric acid won't do this.",
+      "ar": "يتفاعل النحاس مع حمض النيتريك لإطلاق دخان بني — حمض الكبريتيك لن يفعل هذا.",
+      "fr": "Le cuivre réagit avec l'acide nitrique en libérant des fumées brunes — l'acide sulfurique ne fera pas ça."
+    },
+    "wrongMsg": {
+      "en": "Sulfuric acid reacts with copper differently — no brown gas here.",
+      "ar": "يتفاعل حمض الكبريتيك مع النحاس بشكل مختلف — لا يوجد غاز بني هنا.",
+      "fr": "L'acide sulfurique réagit différemment avec le cuivre — pas de gaz brun ici."
+    }
+  },
+  "zinc-copper-displacement": {
+    "id": "zinc-copper-displacement",
+    "difficulty": "easy",
+    "name": {
+      "en": "Zinc + Copper Sulfate",
+      "ar": "الزنك وكبريتات النحاس",
+      "fr": "Zinc + Sulfate de cuivre"
+    },
+    "chemicals": [
+      "zinc",
+      "copper_sulfate"
+    ],
+    "distractor": "iron",
+    "apparatusNeeded": [
+      "testTube"
+    ],
+    "effects": {
+      "color": "color-red",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": true
+    },
+    "successMsg": {
+      "en": "Copper deposits on the zinc as the blue solution fades to colorless!",
+      "ar": "يترسب النحاس على الزنك بينما يتلاشى المحلول الأزرق!",
+      "fr": "Le cuivre se dépose sur le zinc pendant que la solution bleue devient incolore !"
+    },
+    "explanation": {
+      "en": "Zinc is more reactive than copper. Zn + CuSO₄ → ZnSO₄ + Cu↓. A displacement reaction where zinc \"steals\" the sulfate from copper.",
+      "ar": "الزنك أكثر تفاعلاً من النحاس. Zn + CuSO₄ → ZnSO₄ + Cu↓. تفاعل إحلال حيث يزيح الزنك كبريتات من النحاس.",
+      "fr": "Le zinc est plus réactif que le cuivre. Zn + CuSO₄ → ZnSO₄ + Cu↓. Une réaction de déplacement où le zinc « vole » le sulfate au cuivre."
+    },
+    "hint": {
+      "en": "Zinc is more reactive than copper — iron won't displace copper this way.",
+      "ar": "الزنك أكثر تفاعلاً من النحاس — الحديد لن يزيح النحاس بهذه الطريقة.",
+      "fr": "Le zinc est plus réactif que le cuivre — le fer ne déplacera pas le cuivre de cette façon."
+    },
+    "wrongMsg": {
+      "en": "Iron is less reactive than copper — no displacement occurs.",
+      "ar": "الحديد أقل تفاعلاً من النحاس — لا يحدث إزاحة.",
+      "fr": "Le fer est moins réactif que le cuivre — aucun déplacement ne se produit."
+    }
+  },
+  "lead-iodide": {
+    "id": "lead-iodide",
+    "difficulty": "medium",
+    "name": {
+      "en": "Lead Nitrate + Potassium Iodide",
+      "ar": "نترات الرصاص + يوديد البوتاسيوم",
+      "fr": "Nitrate de plomb + Iodure de potassium"
+    },
+    "chemicals": [
+      "lead_nitrate",
+      "potassium_iodide"
+    ],
+    "distractor": "sodium_chloride",
+    "apparatusNeeded": [
+      "beaker"
+    ],
+    "effects": {
+      "color": "color-yellow",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": true
+    },
+    "successMsg": {
+      "en": "A bright yellow precipitate of lead iodide forms!",
+      "ar": "يتكوّن راسب أصفر ساطع من يوديد الرصاص!",
+      "fr": "Un précipité jaune vif d'iodure de plomb se forme !"
+    },
+    "explanation": {
+      "en": "Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃. Lead iodide is a striking yellow solid that forms instantly when the two solutions mix.",
+      "ar": "Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃. يوديد الرصاص صلب أصفر ساطع يتكون فوراً عند خلط المحلولين.",
+      "fr": "Pb(NO₃)₂ + 2KI → PbI₂↓ + 2KNO₃. L'iodure de plomb est un solide jaune saisissant qui se forme instantanément au mélange des deux solutions."
+    },
+    "hint": {
+      "en": "Lead nitrate reacts with iodide — sodium chloride won't give a yellow precipitate.",
+      "ar": "نترات الرصاص تتفاعل مع اليوديد — كلوريد الصوديوم لن ينتج راسب أصفر.",
+      "fr": "Le nitrate de plomb réagit avec l'iodure — le chlorure de sodium ne donnera pas de précipité jaune."
+    },
+    "wrongMsg": {
+      "en": "Sodium chloride with lead nitrate doesn't produce a yellow precipitate.",
+      "ar": "كلوريد الصوديوم مع نترات الرصاص لا ينتج راسب أصفر.",
+      "fr": "Le chlorure de sodium avec le nitrate de plomb ne produit pas de précipité jaune."
+    }
+  },
+  "starch-iodine": {
+    "id": "starch-iodine",
+    "difficulty": "easy",
+    "name": {
+      "en": "Starch + Iodine (Color)",
+      "ar": "النشا واليود (اللون)",
+      "fr": "Amidon + Iode (couleur)"
+    },
+    "chemicals": [
+      "starch",
+      "iodine"
+    ],
+    "distractor": "glucose",
+    "apparatusNeeded": [
+      "beaker"
+    ],
+    "effects": {
+      "color": "color-blue",
+      "heat": false,
+      "bubbles": false,
+      "precipitate": false
+    },
+    "successMsg": {
+      "en": "The mixture turns deep blue-black — the classic starch-iodine test!",
+      "ar": "يتحول الخليط إلى أزرق-أسود عميق — اختبار النشا-اليود الكلاسيكي!",
+      "fr": "Le mélange devient bleu-noir profond — le test classique amidon-iode !"
+    },
+    "explanation": {
+      "en": "Iodine molecules fit inside the helical structure of starch, creating a blue-black complex. This is a famous test to detect starch in food.",
+      "ar": "تتناسب جزيئات اليود داخل البنية الحلزونية للنشا، مما ينشئ معقد أزرق-أسود. هذا اختبار مشهور للكشف عن النشا في الغذاء.",
+      "fr": "Les molécules d'iode se logent dans la structure hélicoïdale de l'amidon, créant un complexe bleu-noir. C'est un test célèbre pour détecter l'amidon dans les aliments."
+    },
+    "hint": {
+      "en": "Iodine forms a dark complex with starch — glucose won't give the same color.",
+      "ar": "يكون اليود معقد داكن مع النشا — الجلوكوز لن يعطي نفس اللون.",
+      "fr": "L'iode forme un complexe foncé avec l'amidon — le glucose ne donnera pas la même couleur."
+    },
+    "wrongMsg": {
+      "en": "Glucose doesn't turn blue-black with iodine — no color change.",
+      "ar": "الجلوكوز لا يتحول إلى أزرق-أسود مع اليود — لا تغيير في اللون.",
+      "fr": "Le glucose ne devient pas bleu-noir avec l'iode — pas de changement de couleur."
+    }
+  },
+  "manganese-h2o2": {
+    "id": "manganese-h2o2",
+    "difficulty": "medium",
+    "name": {
+      "en": "Manganese Dioxide Catalyst",
+      "ar": "عامل MnO₂ الحفّاز",
+      "fr": "Catalyseur au dioxyde de manganèse"
+    },
+    "chemicals": [
+      "manganese_dioxide",
+      "hydrogen_peroxide"
+    ],
+    "distractor": "iron_oxide",
+    "apparatusNeeded": [
+      "flask"
+    ],
+    "effects": {
+      "color": "color-clear",
+      "heat": false,
+      "bubbles": true,
+      "foam": false
+    },
+    "successMsg": {
+      "en": "Vigorous bubbling! Oxygen gas is released rapidly.",
+      "ar": "فوران عنيف! يتم إطلاق غاز الأكسجين بسرعة.",
+      "fr": "Bouillonnement intense ! Du gaz oxygène est libéré rapidement."
+    },
+    "explanation": {
+      "en": "2H₂O₂ → 2H₂O + O₂↑. MnO₂ acts as a catalyst, speeding up decomposition without being consumed. Iron oxide doesn't catalyze this reaction.",
+      "ar": "2H₂O₂ → 2H₂O + O₂↑. يعمل MnO₂ كعامل حفّاز، يسرع التحلل دون أن يُستهلك. أكسيد الحديد لا يحفز هذا التفاعل.",
+      "fr": "2H₂O₂ → 2H₂O + O₂↑. Le MnO₂ agit comme catalyseur, accélérant la décomposition sans être consommé. L'oxyde de fer ne catalyse pas cette réaction."
+    },
+    "hint": {
+      "en": "Manganese dioxide is a catalyst for H₂O₂ decomposition — iron oxide won't work.",
+      "ar": "ثاني أكسيد المنجنيز عامل حفّاز لتحلل بيروكسيد الهيدروجين — أكسيد الحديد لن ينجح.",
+      "fr": "Le dioxyde de manganèse est un catalyseur pour la décomposition de H₂O₂ — l'oxyde de fer ne fonctionnera pas."
+    },
+    "wrongMsg": {
+      "en": "Iron oxide doesn't effectively catalyze hydrogen peroxide decomposition.",
+      "ar": "أكسيد الحديد لا يحفز بفعالية تحلل بيروكسيد الهيدروجين.",
+      "fr": "L'oxyde de fer ne catalyse pas efficacement la décomposition du peroxyde d'hydrogène."
+    }
+  },
+  "sugar-h2so4": {
+    "id": "sugar-h2so4",
+    "difficulty": "hard",
+    "name": {
+      "en": "Sugar + Sulfuric Acid (Dehydration)",
+      "ar": "السكر وحمض الكبريتيك (الجفاف)",
+      "fr": "Sucre + Acide sulfurique (déshydratation)"
+    },
+    "chemicals": [
+      "sugar",
+      "sulfuric_acid"
+    ],
+    "distractor": "hydrochloric_acid",
+    "apparatusNeeded": [
+      "beaker",
+      "burner"
+    ],
+    "effects": {
+      "color": "color-black",
+      "heat": true,
+      "bubbles": true,
+      "foam": true
+    },
+    "successMsg": {
+      "en": "The sugar blackens into charcoal as water boils off!",
+      "ar": "يتحول السكر إلى فحم أسود بينما يتبخر الماء!",
+      "fr": "Le sucre noircit en charbon pendant que l'eau s'évapore !"
+    },
+    "explanation": {
+      "en": "C₁₂H₂₂O₁₁ -H₂SO₄→ 12C + H₂O (steam). Sulfuric acid dehydrates the sugar, removing all water and leaving pure carbon. This is a dramatic exothermic reaction!",
+      "ar": "C₁₂H₂₂O₁₁ -H₂SO₄→ 12C + H₂O (بخار). يجفف حمض الكبريتيك السكر، مزيلاً كل الماء تاركاً كربون نقي. هذا تفاعل طارد للحرارة درامي!",
+      "fr": "C₁₂H₂₂O₁₁ -H₂SO₄→ 12C + H₂O (vapeur). L'acide sulfurique déshydrate le sucre, retirant toute l'eau et ne laissant que du carbone pur. Une réaction exothermique spectaculaire !"
+    },
+    "hint": {
+      "en": "Concentrated sulfuric acid dehydrates sugar — hydrochloric acid won't have the same effect.",
+      "ar": "حمض الكبريتيك المركز يجفف السكر — حمض الهيدروكلوريك لن يكون له نفس التأثير.",
+      "fr": "L'acide sulfurique concentré déshydrate le sucre — l'acide chlorhydrique n'aura pas le même effet."
+    },
+    "wrongMsg": {
+      "en": "Hydrochloric acid doesn't dehydrate sugar effectively — the dramatic blackening won't occur.",
+      "ar": "حمض الهيدروكلوريك لا يجفف السكر بفعالية — الاسوداد الدرامي لن يحدث.",
+      "fr": "L'acide chlorhydrique ne déshydrate pas efficacement le sucre — le noircissement spectaculaire ne se produira pas."
+    }
+  },
+  "aluminum-naoh": {
+    "id": "aluminum-naoh",
+    "difficulty": "hard",
+    "name": {
+      "en": "Aluminum + Sodium Hydroxide",
+      "ar": "الألومنيوم وهيدروكسيد الصوديوم",
+      "fr": "Aluminium + Hydroxyde de sodium"
+    },
+    "chemicals": [
+      "aluminum",
+      "naoh"
+    ],
+    "distractor": "vinegar",
+    "apparatusNeeded": [
+      "flask"
+    ],
+    "effects": {
+      "color": "color-clear",
+      "heat": true,
+      "bubbles": true,
+      "foam": true
+    },
+    "successMsg": {
+      "en": "Rapid bubbling of hydrogen gas — the flask gets hot!",
+      "ar": "فوران سريع لغاز الهيدروجين — يسخن الدورق!",
+      "fr": "Bouillonnement rapide d'hydrogène gazeux — le flacon chauffe !"
+    },
+    "explanation": {
+      "en": "2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑. Aluminum is amphoteric—it reacts with both acids AND bases. The reaction is exothermic.",
+      "ar": "2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑. الألومنيوم مادة برمائية—تتفاعل مع الحمضيات والقواعد. التفاعل طارد للحرارة.",
+      "fr": "2Al + 2NaOH + 2H₂O → 2NaAlO₂ + 3H₂↑. L'aluminium est amphotère — il réagit à la fois avec les acides ET les bases. La réaction est exothermique."
+    },
+    "hint": {
+      "en": "Aluminum reacts with bases, not acids — vinegar won't work the same way.",
+      "ar": "يتفاعل الألومنيوم مع القواعد وليس الحمضيات — الخل لن ينجح بنفس الطريقة.",
+      "fr": "L'aluminium réagit avec les bases, pas les acides — le vinaigre ne fonctionnera pas de la même façon."
+    },
+    "wrongMsg": {
+      "en": "Vinegar is too weak — aluminum needs a strong base like sodium hydroxide.",
+      "ar": "الخل ضعيف جداً — يحتاج الألومنيوم إلى قاعدة قوية مثل هيدروكسيد الصوديوم.",
+      "fr": "Le vinaigre est trop faible — l'aluminium a besoin d'une base forte comme l'hydroxyde de sodium."
+    }
+  }
+};
 
 
   const SCORE_BY_DIFFICULTY = { easy: 10, medium: 20, hard: 30 };
@@ -1353,7 +3269,7 @@
   function showFreeMode() {
     state.currentExperimentId = null;
     el.labExperimentTitle.textContent = I18N[state.lang].lab_default_title;
-    updateBoard(I18N[state.lang].lab_default_title, 'Discover reactions');
+    updateBoard(I18N[state.lang].lab_default_title, I18N[state.lang].board_free_sub);
     // Visibility is narrowed to just the Beaker by initApparatusSelector()
     // below (it used to show all three glassware pieces at once here, which
     // defeated the point of the selector and ate a lot of screen space).
@@ -1440,8 +3356,8 @@
     // no matter which one was "selected", which was both confusing and
     // wasted a lot of vertical space on small screens.
     updateApparatusVisibility([containerId]);
-    const containerNames = { beaker: 'Beaker', testTube: 'Test Tube', flask: 'Flask' };
-    logMessage(`Selected: ${containerNames[containerId] || containerId}`, 'info');
+    const containerNames = { beaker: I18N[state.lang].label_beaker, testTube: I18N[state.lang].label_testtube, flask: I18N[state.lang].label_flask };
+    logMessage(`${I18N[state.lang].msg_selected}${containerNames[containerId] || containerId}`, 'info');
   }
 
   /** Set which apparatus is selected for chemical drops */
@@ -1755,7 +3671,7 @@
       setTimeout(() => {
         openResultModal({
           success: false,
-          title: state.lang === 'ar' ? 'لا يوجد تفاعل' : 'No Reaction',
+          title: { en: 'No Reaction', ar: 'لا يوجد تفاعل', fr: 'Aucune réaction' }[state.lang],
           text: msg,
         });
       }, 650);
@@ -2247,7 +4163,7 @@
       });
 
       el.langToggle.addEventListener('click', () => {
-        state.lang = state.lang === 'ar' ? 'en' : 'ar';
+        state.lang = nextLang(state.lang);
         localStorage.setItem('chemlab_lang', state.lang);
         applyTranslations();
       });

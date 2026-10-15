@@ -96,7 +96,7 @@
         </button>
 
         <!-- Language / direction toggle (Arabic-friendly layout) -->
-        <button class="icon-btn lang-btn" id="langToggle" title="Switch language / تبديل اللغة">
+        <button class="icon-btn lang-btn" id="langToggle" title="Switch language / تبديل اللغة / Changer de langue">
           <span id="langLabel">AR</span>
         </button>
 
@@ -153,7 +153,7 @@
     =========================================================== -->
     <section id="page-mode-select-class" class="page">
       <div class="mode-select-container">
-        <button class="btn-back" data-nav="mode-select" aria-label="Go back">← Back</button>
+        <button class="btn-back" data-nav="mode-select" aria-label="Go back" data-i18n="back_btn">← Back</button>
         <h1 data-i18n="class_mode_title">Class Competition Mode</h1>
         
         <div class="mode-grid">
@@ -179,7 +179,7 @@
     =========================================================== -->
     <section id="page-teacher-setup" class="page">
       <div class="teacher-setup-container">
-        <button class="btn-back" data-nav="mode-select" aria-label="Go back">← Back</button>
+        <button class="btn-back" data-nav="mode-select" aria-label="Go back" data-i18n="back_btn">← Back</button>
         
         <h1 data-i18n="teacher_title">Create a Class Competition</h1>
         
@@ -225,7 +225,7 @@
     =========================================================== -->
     <section id="page-student-join" class="page">
       <div class="student-join-container">
-        <button class="btn-back" data-nav="mode-select" aria-label="Go back">← Back</button>
+        <button class="btn-back" data-nav="mode-select" aria-label="Go back" data-i18n="back_btn">← Back</button>
         
         <h1 data-i18n="student_title">Join a Class Competition</h1>
         
@@ -333,8 +333,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-easy" data-i18n="diff_easy">Easy</span>
-            <h3>Starch + Iodine</h3>
-            <p>Classic blue-black color change test!</p>
+            <h3 data-i18n="card_starch_iodine_name">Starch + Iodine</h3>
+            <p data-i18n="card_starch_iodine_desc">Classic blue-black color change test!</p>
             <button class="btn btn-primary btn-start" data-experiment="starch-iodine" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -346,8 +346,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-easy" data-i18n="diff_easy">Easy</span>
-            <h3>Zinc + Copper Sulfate</h3>
-            <p>Watch red copper metal coat the zinc.</p>
+            <h3 data-i18n="card_zinc_copper_name">Zinc + Copper Sulfate</h3>
+            <p data-i18n="card_zinc_copper_desc">Watch red copper metal coat the zinc.</p>
             <button class="btn btn-primary btn-start" data-experiment="zinc-copper-displacement" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -385,8 +385,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-medium" data-i18n="diff_medium">Medium</span>
-            <h3>Iron + Sulfur</h3>
-            <p>Heat iron and sulfur to form black iron sulfide.</p>
+            <h3 data-i18n="card_iron_sulfur_name">Iron + Sulfur</h3>
+            <p data-i18n="card_iron_sulfur_desc">Heat iron and sulfur to form black iron sulfide.</p>
             <button class="btn btn-primary btn-start" data-experiment="iron-sulfur" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -398,8 +398,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-medium" data-i18n="diff_medium">Medium</span>
-            <h3>Calcium + Water</h3>
-            <p>Calmer than sodium but still reactive — bubbling hydrogen!</p>
+            <h3 data-i18n="card_calcium_water_name">Calcium + Water</h3>
+            <p data-i18n="card_calcium_water_desc">Calmer than sodium but still reactive — bubbling hydrogen!</p>
             <button class="btn btn-primary btn-start" data-experiment="calcium-water" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -411,8 +411,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-medium" data-i18n="diff_medium">Medium</span>
-            <h3>Lead Nitrate + Iodide</h3>
-            <p>Bright yellow precipitate forms instantly!</p>
+            <h3 data-i18n="card_lead_iodide_name">Lead Nitrate + Iodide</h3>
+            <p data-i18n="card_lead_iodide_desc">Bright yellow precipitate forms instantly!</p>
             <button class="btn btn-primary btn-start" data-experiment="lead-iodide" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -424,8 +424,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-medium" data-i18n="diff_medium">Medium</span>
-            <h3>MnO₂ Catalyst</h3>
-            <p>Vigorous oxygen release with catalyst!</p>
+            <h3 data-i18n="card_manganese_name">MnO₂ Catalyst</h3>
+            <p data-i18n="card_manganese_desc">Vigorous oxygen release with catalyst!</p>
             <button class="btn btn-primary btn-start" data-experiment="manganese-h2o2" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -450,8 +450,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-hard" data-i18n="diff_hard">Hard</span>
-            <h3>Sodium + Water</h3>
-            <p>Vigorous reaction with flames — alkali metal warfare!</p>
+            <h3 data-i18n="card_sodium_water_name">Sodium + Water</h3>
+            <p data-i18n="card_sodium_water_desc">Vigorous reaction with flames — alkali metal warfare!</p>
             <button class="btn btn-primary btn-start" data-experiment="sodium-water" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -463,8 +463,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-hard" data-i18n="diff_hard">Hard</span>
-            <h3>Copper + Nitric Acid</h3>
-            <p>Brown nitrogen dioxide gas — toxic fumes!</p>
+            <h3 data-i18n="card_copper_nitric_name">Copper + Nitric Acid</h3>
+            <p data-i18n="card_copper_nitric_desc">Brown nitrogen dioxide gas — toxic fumes!</p>
             <button class="btn btn-primary btn-start" data-experiment="copper-nitric-acid" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -476,8 +476,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-hard" data-i18n="diff_hard">Hard</span>
-            <h3>Sugar + Sulfuric Acid</h3>
-            <p>Dramatic dehydration to pure black carbon!</p>
+            <h3 data-i18n="card_sugar_sulfuric_name">Sugar + Sulfuric Acid</h3>
+            <p data-i18n="card_sugar_sulfuric_desc">Dramatic dehydration to pure black carbon!</p>
             <button class="btn btn-primary btn-start" data-experiment="sugar-h2so4" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -489,8 +489,8 @@
           </div>
           <div class="card-body">
             <span class="difficulty diff-hard" data-i18n="diff_hard">Hard</span>
-            <h3>Aluminum + NaOH</h3>
-            <p>Amphoteric metal reacts with bases!</p>
+            <h3 data-i18n="card_aluminum_naoh_name">Aluminum + NaOH</h3>
+            <p data-i18n="card_aluminum_naoh_desc">Amphoteric metal reacts with bases!</p>
             <button class="btn btn-primary btn-start" data-experiment="aluminum-naoh" data-i18n="start_btn">Start</button>
           </div>
         </article>
@@ -761,7 +761,7 @@
   ============================================================= -->
   <footer class="site-footer">
     <p data-i18n="footer_text">ChemLab2D — a safe space to think like a chemist.</p>
-    <p class="footer-credit">© Developed by <strong>Lama</strong></p>
+    <p class="footer-credit"><span data-i18n="footer_dev">© Developed by</span> <strong>Lama</strong></p>
   </footer>
 
   <!-- ============================================================
