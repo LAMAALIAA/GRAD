@@ -1260,6 +1260,8 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 .liquid.color-cyan    { background: linear-gradient(135deg, #a5f3ec 0%, #5eead4 50%, #0d9488 100%); }
 .liquid.color-yellow  { background: linear-gradient(135deg, #fde68a 0%, #facc15 50%, #ca8a04 100%); }
 .liquid.color-gray    { background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 50%, #475569 100%); }
+.liquid.color-red     { background: linear-gradient(135deg, #f4a58a 0%, #d9663c 50%, #9a3412 100%); }
+.liquid.color-black   { background: linear-gradient(135deg, #52525b 0%, #27272a 50%, #09090b 100%); }
 
 /* A brief "swirl" flash the instant two chemicals combine */
 .liquid.is-reacting { animation: reactFlash 650ms ease; }

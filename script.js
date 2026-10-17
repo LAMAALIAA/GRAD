@@ -3612,23 +3612,32 @@
       const message = isMatch ? exp.successMsg[state.lang] : freeReaction.result.text[state.lang];
       const color = isMatch ? exp.effects.color : freeReaction.result.color;
       
-      apRefs.liquid.classList.add(color, 'is-reacting');
-      apRefs.el.classList.add('is-reacting', 'reaction-pulse');
-      vibrate([30, 50, 30]);
+      // Visual effects are purely cosmetic — if any one of them throws, the
+      // experiment must STILL be counted and the result popup STILL shown.
+      // (A missing bubble/precipitate layer on one piece of glassware used
+      // to throw here, which silently swallowed the completion message for
+      // those experiments.)
+      try {
+        apRefs.liquid.classList.add(color, 'is-reacting');
+        apRefs.el.classList.add('is-reacting', 'reaction-pulse');
+        vibrate([30, 50, 30]);
 
-      if ((isMatch && exp.effects.bubbles) || (!isMatch && freeReaction.bubbles)) {
-        apRefs.el.classList.add('is-fizzing');
-        spawnBubbles(apRefs.bubbles, 16);
-        sound.fizz();
-      }
-      if ((isMatch && exp.effects.precipitate) || (!isMatch && freeReaction.precipitate)) {
-        apRefs.el.classList.add('has-precipitate');
-        spawnPrecipitate(apRefs.precipitate, 8);
-        sound.precipitate();
-      }
-      if ((isMatch && exp.effects.heat) || (!isMatch && freeReaction.heat)) {
-        apRefs.el.classList.add('is-hot');
-        setTimeout(() => apRefs.el.classList.remove('is-hot'), 3200);
+        if ((isMatch && exp.effects.bubbles) || (!isMatch && freeReaction.bubbles)) {
+          apRefs.el.classList.add('is-fizzing');
+          spawnBubbles(apRefs.bubbles, 16);
+          sound.fizz();
+        }
+        if ((isMatch && exp.effects.precipitate) || (!isMatch && freeReaction.precipitate)) {
+          apRefs.el.classList.add('has-precipitate');
+          spawnPrecipitate(apRefs.precipitate, 8);
+          sound.precipitate();
+        }
+        if ((isMatch && exp.effects.heat) || (!isMatch && freeReaction.heat)) {
+          apRefs.el.classList.add('is-hot');
+          setTimeout(() => apRefs.el.classList.remove('is-hot'), 3200);
+        }
+      } catch (fxErr) {
+        console.error('⚠️ Reaction visual effect failed (completion still proceeds):', fxErr);
       }
 
       logMessage(message, 'success');
@@ -3684,6 +3693,7 @@
   }
 
   function spawnBubbles(container, count) {
+    if (!container) return; // glassware without a bubble layer: skip, never crash
     for (let i = 0; i < count; i++) {
       const b = document.createElement('span');
       b.className = 'bubble';
@@ -3732,6 +3742,7 @@
   }
 
   function spawnPrecipitate(container, count) {
+    if (!container) return; // glassware without a precipitate layer: skip, never crash
     for (let i = 0; i < count; i++) {
       const g = document.createElement('span');
       g.className = 'grain';
@@ -4129,8 +4140,8 @@
       
       // ✅ Initialize APPARATUS_IDS AFTER el (make it available to other functions)
       APPARATUS_IDS.beaker = { el: $('#beaker'), liquid: $('#beakerLiquid'), bubbles: $('#beakerBubbles'), precipitate: $('#beakerPrecipitate') };
-      APPARATUS_IDS.testTube = { el: $('#testTube'), liquid: $('#testTubeLiquid'), bubbles: null, precipitate: null };
-      APPARATUS_IDS.flask = { el: $('#flask'), liquid: $('#flaskLiquid'), bubbles: $('#flaskBubbles'), precipitate: null };
+      APPARATUS_IDS.testTube = { el: $('#testTube'), liquid: $('#testTubeLiquid'), bubbles: $('#testTubeBubbles'), precipitate: $('#testTubePrecipitate') };
+      APPARATUS_IDS.flask = { el: $('#flask'), liquid: $('#flaskLiquid'), bubbles: $('#flaskBubbles'), precipitate: $('#flaskPrecipitate') };
       
       console.log('✅ APPARATUS_IDS initialized');
       
