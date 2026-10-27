@@ -35,6 +35,11 @@
   const LANG_CYCLE = ['en', 'ar', 'fr'];
   const nextLang = (current) => LANG_CYCLE[(LANG_CYCLE.indexOf(current) + 1) % LANG_CYCLE.length];
 
+  // Free Lab AI helper: a Cloudflare Worker that holds the API key and asks
+  // Claude. Set to '' to switch the feature off completely.
+  const AI_ENDPOINT = 'https://chemlab-ai.lama-a-com.workers.dev/';
+  const AI_TIMEOUT_MS = 20000;
+
   /* ----------------------------------------------------------------
      1. APP STATE
      One place holding everything that can change at runtime.
@@ -536,6 +541,15 @@
   I18N.en.msg_selected = "Selected: ";
   I18N.ar.msg_selected = "تم اختيار: ";
   I18N.fr.msg_selected = "Sélectionné : ";
+  I18N.en.ai_analyzing = "Analyzing the reaction…";
+  I18N.ar.ai_analyzing = "جارٍ تحليل التفاعل…";
+  I18N.fr.ai_analyzing = "Analyse de la réaction…";
+  I18N.en.ai_added_suffix = " — added to your shelf!";
+  I18N.ar.ai_added_suffix = " — أُضيف إلى رفّك!";
+  I18N.fr.ai_added_suffix = " — ajouté à ton étagère !";
+  I18N.en.ai_note = "AI answer — please double-check";
+  I18N.ar.ai_note = "إجابة الذكاء الاصطناعي — يُفضّل التأكد منها";
+  I18N.fr.ai_note = "Réponse de l'IA — à vérifier";
 
   /** Translate every [data-i18n] element + set <html lang/dir>. */
   function applyTranslations() {
@@ -2264,6 +2278,185 @@
   }
 ];
 
+  /* ================================================================
+     FREE LAB — AI HELPER
+     When two chemicals have no hand-written reaction, ask the Cloudflare
+     Worker (it holds the API key and asks Claude). Everything here is
+     optional: if AI_ENDPOINT is empty, the Worker is down, or the phone is
+     offline, nothing changes — the usual "No reaction" message appears.
+     Answers are re-validated here too (never trust the network blindly),
+     cached on the device, and every AI answer is labelled as AI-made.
+  ================================================================ */
+  const AI_COLORS = ['clear', 'blue', 'pink', 'purple', 'green', 'amber', 'copper',
+    'colorless', 'cyan', 'yellow', 'gray', 'red', 'black'];
+  const AI_COLOR_HEX = {
+    clear: '#cfe8f5', blue: '#3b82f6', pink: '#f472b6', purple: '#8b5cf6', green: '#34d399',
+    amber: '#f59e0b', copper: '#3db5e5', colorless: '#e0f2fe', cyan: '#5eead4',
+    yellow: '#facc15', gray: '#94a3b8', red: '#ef4444', black: '#27272a',
+  };
+  // The formula is the one AI-supplied string that ends up inside innerHTML
+  // (bottle label), so only a tight, tag-free character set is accepted.
+  const AI_FORMULA_OK = /^[A-Za-z0-9₀-₉()·+\-\s]{1,24}$/;
+  const SUBSCRIPTS = '₀₁₂₃₄₅₆₇₈₉';
+
+  // "H2SO4" → "H₂SO₄" (only digits right after a letter or ")", so the 2 in "2Na" stays normal)
+  const prettyFormula = (s) => String(s).replace(/([A-Za-z)])(\d+)/g,
+    (m, a, d) => a + d.replace(/\d/g, (x) => SUBSCRIPTS[x]));
+  const prettyEquation = (s) => prettyFormula(String(s).replace(/<->/g, '⇌').replace(/-+>/g, '→'));
+  // Arrows must be turned into real arrows BEFORE angle brackets are stripped
+  // for safety, otherwise "->" silently loses its ">" and becomes a minus sign.
+  const aiArrows = (s) => String(s == null ? '' : s)
+    .replace(/<->|<=>/g, '⇌').replace(/-{1,2}>|=>/g, '→')
+    // a Worker that predates this fix already dropped the ">": " - " between two spaces was the arrow
+    .replace(/(\S) - (\S)/g, '$1 → $2');
+  const normFormula = (s) => String(s).replace(/[₀-₉]/g, (c) => String(SUBSCRIPTS.indexOf(c)))
+    .replace(/\((?:s|l|g|aq)\)/gi, '').replace(/[\s·]/g, '');
+
+  const aiText = (s, max) => String(s == null ? '' : s).replace(/[<>`]/g, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  const aiTri = (o, max) => {
+    if (!o || typeof o !== 'object') return null;
+    const en = aiText(o.en, max);
+    if (!en) return null;
+    return { en, ar: aiText(o.ar, max) || en, fr: aiText(o.fr, max) || en };
+  };
+
+  function normalizeAiResult(r) {
+    if (!r || typeof r !== 'object') return null;
+    const explanation = aiTri(r.explanation, 400);
+    if (!explanation) return null;
+    const out = {
+      reacts: r.reacts === true,
+      equation: aiText(aiArrows(r.equation), 120),
+      color: AI_COLORS.includes(r.color) ? r.color : 'colorless',
+      heat: r.heat === true,
+      bubbles: r.bubbles === true,
+      precipitate: r.precipitate === true,
+      danger: ['none', 'caution', 'hazard'].includes(r.danger) ? r.danger : 'none',
+      explanation,
+      product: null,
+    };
+    if (out.reacts && r.product && typeof r.product === 'object') {
+      const name = aiTri(r.product.name, 60);
+      const info = aiTri(r.product.info, 240);
+      const formula = aiText(r.product.formula, 24);
+      const id = String(r.product.id || '');
+      if (name && info && AI_FORMULA_OK.test(formula) && /^ai_[a-z0-9_]{1,36}$/.test(id)) {
+        out.product = { id, formula, name, info };
+      }
+    }
+    return out;
+  }
+
+  const isValidAiDef = (d) => !!d && typeof d === 'object' &&
+    ['name', 'short', 'info'].every((k) => d[k] && ['en', 'ar', 'fr'].every((l) => typeof d[k][l] === 'string')) &&
+    typeof d.formula === 'string' && AI_FORMULA_OK.test(d.formula) &&
+    typeof d.bottleColor === 'string' && /^#[0-9a-f]{6}$/i.test(d.bottleColor);
+
+  // ---- remembered on this device -------------------------------------------
+  let aiCache = {};      // "a+b" → the (validated) answer, positive or negative
+  let aiCompounds = {};  // id → full chemical entry for compounds the AI introduced
+  try { aiCache = JSON.parse(localStorage.getItem('chemlab_ai_cache') || '{}') || {}; } catch (e) { aiCache = {}; }
+  try { aiCompounds = JSON.parse(localStorage.getItem('chemlab_ai_compounds') || '{}') || {}; } catch (e) { aiCompounds = {}; }
+  Object.keys(aiCache).forEach((k) => { const n = normalizeAiResult(aiCache[k]); if (n) aiCache[k] = n; else delete aiCache[k]; });
+  Object.keys(aiCompounds).forEach((id) => {
+    if (/^ai_[a-z0-9_]{1,36}$/.test(id) && isValidAiDef(aiCompounds[id]) && !CHEMICALS[id]) CHEMICALS[id] = aiCompounds[id];
+    else delete aiCompounds[id];
+  });
+  function saveAi() {
+    try {
+      localStorage.setItem('chemlab_ai_cache', JSON.stringify(aiCache));
+      localStorage.setItem('chemlab_ai_compounds', JSON.stringify(aiCompounds));
+    } catch (e) { /* storage full / blocked: the feature still works for this session */ }
+  }
+
+  const aiPairKey = (ids) => [...ids].sort().join('+');
+  const aiAnswerFor = (added) => (added.length === 2 ? aiCache[aiPairKey(added)] || null : null);
+
+  /** Only the exact situation the Worker accepts: Free Lab, exactly two of the site's own chemicals. */
+  function aiEligible(apState) {
+    return !!AI_ENDPOINT && !state.currentExperimentId && apState.added.length === 2 &&
+      apState.added.every((id) => CHEMICALS[id] && !id.startsWith('ai_'));
+  }
+
+  async function askAI(pair) {
+    const key = aiPairKey(pair);
+    if (aiCache[key]) return aiCache[key];
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), AI_TIMEOUT_MS);
+    try {
+      const res = await fetch(AI_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chemicals: [...pair].sort() }),
+        signal: ctl.signal,
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      const answer = data && data.ok === true ? normalizeAiResult(data.result) : null;
+      if (!answer) return null;
+      aiCache[key] = answer;
+      saveAi();
+      return answer;
+    } catch (e) {
+      console.warn('[AI helper] unavailable, falling back to the normal "no reaction" message:', e);
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** If the AI's product is one the site already has (e.g. NaOH, water, H₂), reuse that entry. */
+  function findStaticByFormula(formula) {
+    const f = normFormula(formula);
+    const ids = Object.keys(CHEMICALS).filter((id) => !id.startsWith('ai_'));
+    let hit = ids.find((id) => normFormula(CHEMICALS[id].formula) === f);
+    if (!hit) {
+      const m = /^([A-Z][a-z]?)\d+$/.exec(f); // H2, O2, Cl2 … → the site's single-symbol elements
+      if (m) hit = ids.find((id) => normFormula(CHEMICALS[id].formula) === m[1]);
+    }
+    return hit || null;
+  }
+
+  function registerAiProduct(product, color) {
+    const existing = findStaticByFormula(product.formula);
+    if (existing) return existing;
+    if (!CHEMICALS[product.id]) {
+      const def = {
+        name: product.name,
+        formula: prettyFormula(product.formula),
+        bottleColor: AI_COLOR_HEX[color] || '#cbd5e1',
+        short: { en: 'Discovered with AI', ar: 'اكتُشفت بالذكاء الاصطناعي', fr: "Découvert avec l'IA" },
+        info: product.info,
+      };
+      CHEMICALS[product.id] = def;
+      aiCompounds[product.id] = def;
+      saveAi();
+    }
+    return product.id;
+  }
+
+  /** Turn an AI answer into the same shape as a FREE_REACTIONS entry so the normal success code runs unchanged. */
+  function aiReactionFrom(pair, r) {
+    const productId = r.product ? registerAiProduct(r.product, r.color) : null;
+    const eq = prettyEquation(r.equation);
+    const warn = r.danger !== 'none' ? '⚠️ ' : '';
+    const text = (lang) => `${warn}🤖 ${eq ? eq + ' — ' : ''}${r.explanation[lang]}` +
+      `${productId ? I18N[lang].ai_added_suffix : ''} (${I18N[lang].ai_note})`;
+    return {
+      name: productId ? CHEMICALS[productId].name : { en: 'Reaction', ar: 'تفاعل', fr: 'Réaction' },
+      needed: pair,
+      result: { color: 'color-' + r.color, text: { en: text('en'), ar: text('ar'), fr: text('fr') } },
+      heat: r.heat, precipitate: r.precipitate, bubbles: r.bubbles,
+      produces: productId,
+    };
+  }
+  function aiReactionFor(added) {
+    const a = aiAnswerFor(added);
+    return a && a.reacts ? aiReactionFrom([...added], a) : null;
+  }
+
+
   const EXPERIMENTS = {
   "neutralization": {
     "id": "neutralization",
@@ -3553,6 +3746,11 @@
       }
     }
 
+    if (apState.pending) {
+      logMessage(I18N[state.lang].ai_analyzing, 'info');
+      return;
+    }
+
     if (apState.resolved) {
       logMessage(I18N[state.lang].full_note, 'warning');
       return;
@@ -3584,7 +3782,7 @@
   /* ----------------------------------------------------------------
      12. REACTION ENGINE
   ---------------------------------------------------------------- */
-  function evaluateReaction(apparatusId, apRefs, apState) {
+  function evaluateReaction(apparatusId, apRefs, apState, opts = {}) {
     const exp = state.currentExperimentId ? EXPERIMENTS[state.currentExperimentId] : null;
     const isFreeMode = !state.currentExperimentId;
     
@@ -3594,10 +3792,30 @@
     // === For Free Mode: check against FREE_REACTIONS ===
     let freeReaction = null;
     if (isFreeMode) {
-      freeReaction = FREE_REACTIONS.find(r => sameSet(r.needed, apState.added));
+      freeReaction = FREE_REACTIONS.find(r => sameSet(r.needed, apState.added)) || aiReactionFor(apState.added);
     }
 
     apRefs.liquid.style.height = '70%';
+
+    // Free Lab and no hand-written answer: ask the AI helper once, then run
+    // this same function again with whatever it said (or nothing, if it's
+    // unreachable — the normal "no reaction" path then takes over).
+    if (isFreeMode && !freeReaction && !opts.aiTried && aiEligible(apState)) {
+      const pair = [...apState.added];
+      apState.pending = true;
+      apRefs.el.classList.add('is-analyzing');
+      logMessage(I18N[state.lang].ai_analyzing, 'info');
+      askAI(pair).then(() => {
+        apRefs.el.classList.remove('is-analyzing');
+        // Reset (which replaces this state object) or mode change while we
+        // waited? Then there's nothing left to finish.
+        if (state.apparatus[apparatusId] !== apState) return;
+        apState.pending = false;
+        if (state.currentExperimentId || apState.resolved || !sameSet(apState.added, pair)) return;
+        evaluateReaction(apparatusId, apRefs, apState, { aiTried: true });
+      });
+      return;
+    }
 
     if (isMatch || freeReaction) {
       // Only lock the apparatus on an actual match — guided experiments
@@ -3669,7 +3887,10 @@
 
       let msg;
       if (isFreeMode) {
-        msg = I18N[state.lang].msg_free_no_reaction || 'No reaction — try different elements!';
+        const aiAnswer = aiAnswerFor(apState.added); // the AI said "nothing happens" and why
+        msg = aiAnswer && !aiAnswer.reacts
+          ? `🤖 ${aiAnswer.explanation[state.lang]} (${I18N[state.lang].ai_note})`
+          : (I18N[state.lang].msg_free_no_reaction || 'No reaction — try different elements!');
       } else {
         msg = exp ? exp.wrongMsg[state.lang] : I18N[state.lang].msg_wrong_start;
       }
@@ -3875,7 +4096,7 @@
           refs.liquid.className = 'liquid';
           refs.liquid.style.height = '0%';
         }
-        refs.el.classList.remove('is-reacting', 'is-fizzing', 'has-precipitate', 'is-hot', 'is-blocked', 'is-foaming', 'is-vapor', 'is-glowing');
+        refs.el.classList.remove('is-reacting', 'is-fizzing', 'has-precipitate', 'is-hot', 'is-blocked', 'is-foaming', 'is-vapor', 'is-glowing', 'is-analyzing');
         if (refs.bubbles) refs.bubbles.innerHTML = '';
         if (refs.precipitate) refs.precipitate.innerHTML = '';
       });
