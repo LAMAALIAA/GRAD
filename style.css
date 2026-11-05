@@ -2110,6 +2110,56 @@ input.is-hand-hovered {
 }
 
 /* ------------------------------------------------------------------
+   ACCOUNT: header button + sign-in modal
+------------------------------------------------------------------ */
+.account-btn .account-initial { display: none; font-weight: 700; font-size: 0.95rem; line-height: 1; }
+.account-btn.is-signed-in { background: linear-gradient(135deg, #0ea5e9, #6366f1); border-color: rgba(255,255,255,0.35); color: #fff; }
+.account-btn.is-signed-in .account-icon { display: none; }
+.account-btn.is-signed-in .account-initial { display: block; }
+
+.account-modal { max-width: 420px; width: calc(100vw - 32px); max-height: 90vh; overflow-y: auto; }
+.account-note { color: var(--text-onDark-muted); font-size: 0.88rem; line-height: 1.55; margin: 0 0 14px; }
+.provider-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: #ffffff; color: #1f2937; border: 1px solid rgba(0,0,0,0.12); font-weight: 600;
+}
+.provider-btn:hover:not(:disabled) { background: #f1f5f9; }
+.provider-btn:disabled, .provider-btn.is-soon {
+  background: rgba(255,255,255,0.05); color: var(--text-onDark-muted);
+  border: 1px dashed var(--border-glow); cursor: not-allowed; opacity: 0.75; margin-top: 12px;
+}
+.soon-badge {
+  font-style: normal; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px;
+  background: rgba(245,166,35,0.2); color: var(--warning);
+}
+.account-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: var(--text-onDark-muted); font-size: 0.8rem; }
+.account-divider::before, .account-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-glow); }
+.account-input {
+  width: 100%; padding: 11px 12px; margin-bottom: 10px; border-radius: 8px;
+  border: 1px solid var(--border-glow); background: var(--bg-deep); color: var(--text-onDark); font: inherit;
+}
+.account-input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 2px rgba(0,184,217,0.25); }
+.account-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.account-actions .btn { flex: 1 1 auto; }
+.account-link { background: none; border: none; color: var(--cyan); text-decoration: underline; cursor: pointer; font-size: 0.85rem; padding: 8px 0 0; }
+.account-error { color: #ff9d9d; font-size: 0.85rem; margin: 2px 0 10px; line-height: 1.5; }
+.account-error.is-info { color: #86efac; }
+.account-guest-btn { width: 100%; margin-top: 14px; }
+.account-card { display: flex; align-items: center; gap: 14px; margin: 10px 0 18px; }
+.account-avatar {
+  width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;
+  font-size: 1.4rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #0ea5e9, #6366f1);
+}
+.account-name { margin: 0; font-weight: 700; color: var(--text-onDark); }
+.account-email { margin: 2px 0 0; color: var(--text-onDark-muted); font-size: 0.85rem; word-break: break-all; }
+
+/* The header is already full on phones — tighten it a little to fit the account button. */
+@media (max-width: 480px) {
+  .header-actions { gap: 6px; }
+  .header-actions .icon-btn { width: 34px; height: 34px; }
+}
+
+/* ------------------------------------------------------------------
    16. FIRST-VISIT TUTORIAL
    A spotlight (dimmed backdrop with a cut-out around the target
    element) plus a small instruction card. Shown once automatically

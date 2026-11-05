@@ -19,7 +19,10 @@ import {
   getDatabase, ref, set, get, update, remove, onValue,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 import {
-  getAuth, signInAnonymously,
+  getAuth, signInAnonymously, onIdTokenChanged, signOut,
+  GoogleAuthProvider, EmailAuthProvider,
+  signInWithPopup, signInWithCredential, linkWithPopup, linkWithCredential,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -44,7 +47,12 @@ async function setup() {
   // entirely, instead of the old test-mode rules that let anyone read or
   // write anything with no token at all, and that expire automatically
   // after 30 days (silently breaking the whole feature if left as-is).
-  await signInAnonymously(auth);
+  //
+  // BUT: first let Firebase finish restoring any saved session. If someone
+  // signed in earlier (Google / email), calling signInAnonymously() here
+  // would replace them with a brand-new guest on every page load.
+  await auth.authStateReady();
+  if (!auth.currentUser) await signInAnonymously(auth);
 
   // All competitions live under /competitions/{CODE} in the database tree.
   const competitionRef = (code) => ref(db, 'competitions/' + code);
@@ -53,10 +61,11 @@ async function setup() {
   window.chemLabCloud = {
     ready: true,
 
-    // This device's anonymous auth ID — stamped onto a competition when a
-    // teacher creates it, so the database rules can later check "is the
-    // person editing/deleting this competition the same one who made it?"
-    uid: auth.currentUser.uid,
+    // The current auth ID — stamped onto a competition when a teacher
+    // creates it, so the database rules can later check "is the person
+    // editing/deleting this competition the same one who made it?"
+    // A getter (not a copy) because it changes if the person signs in or out.
+    get uid() { return auth.currentUser ? auth.currentUser.uid : null; },
 
     /** Teacher: create a brand-new competition document. */
     saveCompetition(code, data) {
@@ -75,8 +84,7 @@ async function setup() {
     listenToCompetition(code, callback) {
       const r = competitionRef(code);
       const handler = (snap) => callback(snap.exists() ? snap.val() : null);
-      onValue(r, handler);
-      return () => onValue(r, handler, { onlyOnce: true }); // best-effort detach
+      return onValue(r, handler); // onValue itself returns the real "stop listening" function
     },
 
     /** Student: write just THIS student's record — never the whole
@@ -89,6 +97,72 @@ async function setup() {
     /** Teacher: remove a competition entirely once it's ended. */
     deleteCompetition(code) {
       return remove(competitionRef(code));
+    },
+  };
+
+  /* ------------------------------------------------------------------
+     Accounts. Everyone starts as an anonymous guest (above). Signing in
+     UPGRADES that guest where possible (link*), which keeps the same uid —
+     so a teacher's competition stays theirs. If the account already
+     exists, we just sign in to it instead. Errors are passed up with
+     their Firebase `code` so the page can show a friendly message.
+  ------------------------------------------------------------------ */
+  const describe = (u) => (!u ? null : {
+    uid: u.uid,
+    isAnonymous: u.isAnonymous,
+    name: u.displayName || '',
+    email: u.email || '',
+    photoURL: u.photoURL || '',
+    provider: (u.providerData && u.providerData[0] && u.providerData[0].providerId) || (u.isAnonymous ? 'anonymous' : ''),
+  });
+
+  window.chemLabAuth = {
+    current: () => describe(auth.currentUser),
+
+    /** cb(user|null) now and on every sign-in / sign-out / link. Returns an unsubscribe function. */
+    onChange(cb) { return onIdTokenChanged(auth, (u) => cb(describe(u))); },
+
+    async signInWithGoogle() {
+      const provider = new GoogleAuthProvider();
+      const u = auth.currentUser;
+      if (u && u.isAnonymous) {
+        try {
+          await linkWithPopup(u, provider);
+        } catch (e) {
+          if (e && (e.code === 'auth/credential-already-in-use' || e.code === 'auth/email-already-in-use')) {
+            const cred = GoogleAuthProvider.credentialFromError(e);
+            if (!cred) throw e;
+            await signInWithCredential(auth, cred); // that Google account already exists → sign in to it
+          } else {
+            throw e;
+          }
+        }
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+      return describe(auth.currentUser);
+    },
+
+    async signUpWithEmail(email, password, name) {
+      const u = auth.currentUser;
+      if (u && u.isAnonymous) await linkWithCredential(u, EmailAuthProvider.credential(email, password));
+      else await createUserWithEmailAndPassword(auth, email, password);
+      if (name) await updateProfile(auth.currentUser, { displayName: name });
+      return describe(auth.currentUser);
+    },
+
+    async signInWithEmail(email, password) {
+      await signInWithEmailAndPassword(auth, email, password);
+      return describe(auth.currentUser);
+    },
+
+    resetPassword(email) { return sendPasswordResetEmail(auth, email); },
+
+    /** Back to being a guest (the app always keeps SOME signed-in identity so Class mode keeps working). */
+    async signOutUser() {
+      await signOut(auth);
+      await signInAnonymously(auth);
+      return describe(auth.currentUser);
     },
   };
 

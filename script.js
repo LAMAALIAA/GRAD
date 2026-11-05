@@ -550,6 +550,104 @@
   I18N.en.ai_note = "AI answer — please double-check";
   I18N.ar.ai_note = "إجابة الذكاء الاصطناعي — يُفضّل التأكد منها";
   I18N.fr.ai_note = "Réponse de l'IA — à vérifier";
+  I18N.en.ai_unavailable = "Couldn't reach the AI helper — press Reset and try again in a moment";
+  I18N.ar.ai_unavailable = "تعذّر الوصول لمساعد الذكاء الاصطناعي — اضغط إعادة ضبط وحاول بعد قليل";
+  I18N.fr.ai_unavailable = "Impossible de joindre l'assistant IA — appuie sur Réinitialiser et réessaie dans un instant";
+  I18N.en.ai_analyzing_heated = "Heating and analyzing the reaction…";
+  I18N.ar.ai_analyzing_heated = "جارٍ التسخين وتحليل التفاعل…";
+  I18N.fr.ai_analyzing_heated = "Chauffage et analyse de la réaction…";
+  I18N.en.ai_try_heat = " Tip: turn the burner on and test again with heat.";
+  I18N.ar.ai_try_heat = " تلميح: شغّل الموقد وجرّب مرة أخرى بالتسخين.";
+  I18N.fr.ai_try_heat = " Astuce : allume le brûleur et réessaie en chauffant.";
+
+  // Account / sign-in
+  I18N.en.acc_title = "Your account";
+  I18N.ar.acc_title = "حسابك";
+  I18N.fr.acc_title = "Ton compte";
+  I18N.en.acc_btn_title = "Account";
+  I18N.ar.acc_btn_title = "الحساب";
+  I18N.fr.acc_btn_title = "Compte";
+  I18N.en.acc_guest_name = "Guest";
+  I18N.ar.acc_guest_name = "زائر";
+  I18N.fr.acc_guest_name = "Invité";
+  I18N.en.acc_guest_note = "You're playing as a guest. Sign in to use your own name on any device.";
+  I18N.ar.acc_guest_note = "أنت تلعب كزائر. سجّل الدخول لتستخدم اسمك الخاص على أي جهاز.";
+  I18N.fr.acc_guest_note = "Tu joues en invité. Connecte-toi pour utiliser ton propre nom sur n'importe quel appareil.";
+  I18N.en.acc_google = "Continue with Google";
+  I18N.ar.acc_google = "المتابعة باستخدام Google";
+  I18N.fr.acc_google = "Continuer avec Google";
+  I18N.en.acc_or_email = "or with email";
+  I18N.ar.acc_or_email = "أو بالبريد الإلكتروني";
+  I18N.fr.acc_or_email = "ou par e-mail";
+  I18N.en.acc_name_ph = "Your name (for a new account)";
+  I18N.ar.acc_name_ph = "اسمك (للحساب الجديد)";
+  I18N.fr.acc_name_ph = "Ton nom (pour un nouveau compte)";
+  I18N.en.acc_email_ph = "Email";
+  I18N.ar.acc_email_ph = "البريد الإلكتروني";
+  I18N.fr.acc_email_ph = "E-mail";
+  I18N.en.acc_password_ph = "Password (6+ characters)";
+  I18N.ar.acc_password_ph = "كلمة المرور (6 أحرف أو أكثر)";
+  I18N.fr.acc_password_ph = "Mot de passe (6 caractères min.)";
+  I18N.en.acc_signin = "Sign in";
+  I18N.ar.acc_signin = "تسجيل الدخول";
+  I18N.fr.acc_signin = "Se connecter";
+  I18N.en.acc_signup = "Create account";
+  I18N.ar.acc_signup = "إنشاء حساب";
+  I18N.fr.acc_signup = "Créer un compte";
+  I18N.en.acc_forgot = "Forgot password?";
+  I18N.ar.acc_forgot = "نسيت كلمة المرور؟";
+  I18N.fr.acc_forgot = "Mot de passe oublié ?";
+  I18N.en.acc_phone = "Continue with phone";
+  I18N.ar.acc_phone = "المتابعة برقم الجوال";
+  I18N.fr.acc_phone = "Continuer avec le téléphone";
+  I18N.en.acc_soon = "Soon";
+  I18N.ar.acc_soon = "قريباً";
+  I18N.fr.acc_soon = "Bientôt";
+  I18N.en.acc_guest_btn = "Continue as guest";
+  I18N.ar.acc_guest_btn = "المتابعة كزائر";
+  I18N.fr.acc_guest_btn = "Continuer en invité";
+  I18N.en.acc_signout = "Sign out";
+  I18N.ar.acc_signout = "تسجيل الخروج";
+  I18N.fr.acc_signout = "Se déconnecter";
+  I18N.en.acc_reset_sent = "Password reset email sent — check your inbox (and spam).";
+  I18N.ar.acc_reset_sent = "تم إرسال رابط إعادة تعيين كلمة المرور — تحقق من بريدك (ومن البريد المزعج).";
+  I18N.fr.acc_reset_sent = "E-mail de réinitialisation envoyé — vérifie ta boîte de réception (et les spams).";
+  I18N.en.acc_err_credentials = "Wrong email or password.";
+  I18N.ar.acc_err_credentials = "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+  I18N.fr.acc_err_credentials = "E-mail ou mot de passe incorrect.";
+  I18N.en.acc_err_email = "Please enter a valid email address.";
+  I18N.ar.acc_err_email = "الرجاء إدخال بريد إلكتروني صحيح.";
+  I18N.fr.acc_err_email = "Merci d'entrer une adresse e-mail valide.";
+  I18N.en.acc_err_in_use = "This email already has an account — use Sign in instead.";
+  I18N.ar.acc_err_in_use = "هذا البريد لديه حساب بالفعل — استخدم تسجيل الدخول.";
+  I18N.fr.acc_err_in_use = "Cet e-mail a déjà un compte — utilise « Se connecter ».";
+  I18N.en.acc_err_weak = "Password must be at least 6 characters.";
+  I18N.ar.acc_err_weak = "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.";
+  I18N.fr.acc_err_weak = "Le mot de passe doit contenir au moins 6 caractères.";
+  I18N.en.acc_err_missing = "Please enter your password.";
+  I18N.ar.acc_err_missing = "الرجاء إدخال كلمة المرور.";
+  I18N.fr.acc_err_missing = "Merci d'entrer ton mot de passe.";
+  I18N.en.acc_err_popup = "Your browser blocked the sign-in window — allow pop-ups for this site and try again.";
+  I18N.ar.acc_err_popup = "المتصفح حجب نافذة تسجيل الدخول — اسمح بالنوافذ المنبثقة لهذا الموقع وحاول مجدداً.";
+  I18N.fr.acc_err_popup = "Ton navigateur a bloqué la fenêtre de connexion — autorise les pop-ups pour ce site et réessaie.";
+  I18N.en.acc_err_disabled = "This sign-in method isn't switched on yet in Firebase.";
+  I18N.ar.acc_err_disabled = "طريقة تسجيل الدخول هذه غير مفعّلة بعد في Firebase.";
+  I18N.fr.acc_err_disabled = "Cette méthode de connexion n'est pas encore activée dans Firebase.";
+  I18N.en.acc_err_domain = "This website address isn't authorized in Firebase yet (Authentication → Settings → Authorized domains).";
+  I18N.ar.acc_err_domain = "عنوان هذا الموقع غير مصرّح به في Firebase بعد (Authentication ← Settings ← Authorized domains).";
+  I18N.fr.acc_err_domain = "L'adresse de ce site n'est pas encore autorisée dans Firebase (Authentication → Settings → Authorized domains).";
+  I18N.en.acc_err_network = "No connection — check your internet and try again.";
+  I18N.ar.acc_err_network = "لا يوجد اتصال — تحقق من الإنترنت وحاول مجدداً.";
+  I18N.fr.acc_err_network = "Pas de connexion — vérifie ton internet et réessaie.";
+  I18N.en.acc_err_many = "Too many attempts — wait a moment and try again.";
+  I18N.ar.acc_err_many = "محاولات كثيرة — انتظر قليلاً ثم حاول مجدداً.";
+  I18N.fr.acc_err_many = "Trop de tentatives — attends un instant puis réessaie.";
+  I18N.en.acc_err_unavailable = "Sign-in isn't available right now (the server couldn't be reached).";
+  I18N.ar.acc_err_unavailable = "تسجيل الدخول غير متاح حالياً (تعذّر الوصول للخادم).";
+  I18N.fr.acc_err_unavailable = "La connexion n'est pas disponible pour le moment (serveur injoignable).";
+  I18N.en.acc_err_generic = "Something went wrong";
+  I18N.ar.acc_err_generic = "حدث خطأ ما";
+  I18N.fr.acc_err_generic = "Une erreur est survenue";
 
   /** Translate every [data-i18n] element + set <html lang/dir>. */
   function applyTranslations() {
@@ -580,6 +678,17 @@
       if (value.includes('<')) el.innerHTML = value;
       else el.textContent = value;
     });
+
+    // Placeholders and tooltips live in attributes, not text.
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((node) => {
+      const v = dict[node.getAttribute('data-i18n-placeholder')];
+      if (typeof v === 'string') node.setAttribute('placeholder', v);
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+      const v = dict[node.getAttribute('data-i18n-title')];
+      if (typeof v === 'string') node.setAttribute('title', v);
+    });
+    renderAccount(account.user); // account button tooltip / guest label follow the language
 
     // Re-render dynamic bits that depend on language (shelf labels, lab title, hint text).
     if (state.currentExperimentId) renderExperimentInLab(state.currentExperimentId, { keepState: true });
@@ -2370,7 +2479,12 @@
   }
 
   const aiPairKey = (ids) => [...ids].sort().join('+');
-  const aiAnswerFor = (added) => (added.length === 2 ? aiCache[aiPairKey(added)] || null : null);
+  // Room-temperature and heated answers are different questions, so they are remembered separately.
+  const aiKey = (ids, heated) => aiPairKey(ids) + (heated ? '|heat' : '');
+  const aiAnswerFor = (added, heated) => (added.length === 2 ? aiCache[aiKey(added, heated)] || null : null);
+
+  /** Is the Free Lab burner switched on right now? */
+  const isHeating = () => !!(el && el.burner && el.burner.classList.contains('is-lit'));
 
   /** Only the exact situation the Worker accepts: Free Lab, exactly two of the site's own chemicals. */
   function aiEligible(apState) {
@@ -2378,28 +2492,46 @@
       apState.added.every((id) => CHEMICALS[id] && !id.startsWith('ai_'));
   }
 
-  async function askAI(pair) {
-    const key = aiPairKey(pair);
+  let aiLastError = ''; // short, human-readable reason the last request failed (shown on screen)
+
+  async function askAI(pair, heated) {
+    aiLastError = '';
+    const key = aiKey(pair, heated);
     if (aiCache[key]) return aiCache[key];
-    if (typeof navigator !== 'undefined' && navigator.onLine === false) return null;
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) { aiLastError = 'offline'; return null; }
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), AI_TIMEOUT_MS);
     try {
       const res = await fetch(AI_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chemicals: [...pair].sort() }),
+        body: JSON.stringify({ chemicals: [...pair].sort(), heated: !!heated }),
         signal: ctl.signal,
       });
-      if (!res.ok) return null;
-      const data = await res.json();
-      const answer = data && data.ok === true ? normalizeAiResult(data.result) : null;
-      if (!answer) return null;
+      let data = null;
+      try { data = await res.json(); } catch (e) { /* body wasn't JSON */ }
+      if (!res.ok || !data || data.ok !== true) {
+        // The Worker explains itself: its own error code, Claude's HTTP status, and a short detail.
+        aiLastError = [res.status, data && data.error, data && data.status, data && data.detail]
+          .filter((x) => x !== undefined && x !== null && x !== '').join(' · ').replace(/[<>`]/g, '').slice(0, 180);
+        console.warn('[AI helper] Worker error:', aiLastError);
+        return null;
+      }
+      // An older Worker ignores "heated" and would hand back a room-temperature
+      // answer — never present that as a heated one.
+      if (heated && data.heated !== true) {
+        aiLastError = 'update the Worker (heating version needed)';
+        console.warn('[AI helper] the Worker does not support heating yet — paste the newest worker.js');
+        return null;
+      }
+      const answer = normalizeAiResult(data.result);
+      if (!answer) { aiLastError = 'unreadable answer'; console.warn('[AI helper] answer failed validation'); return null; }
       aiCache[key] = answer;
       saveAi();
       return answer;
     } catch (e) {
-      console.warn('[AI helper] unavailable, falling back to the normal "no reaction" message:', e);
+      aiLastError = e && e.name === 'AbortError' ? 'timeout' : 'network';
+      console.warn('[AI helper] could not reach the Worker:', e);
       return null;
     } finally {
       clearTimeout(timer);
@@ -2437,11 +2569,11 @@
   }
 
   /** Turn an AI answer into the same shape as a FREE_REACTIONS entry so the normal success code runs unchanged. */
-  function aiReactionFrom(pair, r) {
+  function aiReactionFrom(pair, r, heated) {
     const productId = r.product ? registerAiProduct(r.product, r.color) : null;
     const eq = prettyEquation(r.equation);
     const warn = r.danger !== 'none' ? '⚠️ ' : '';
-    const text = (lang) => `${warn}🤖 ${eq ? eq + ' — ' : ''}${r.explanation[lang]}` +
+    const text = (lang) => `${warn}🤖${heated ? ' 🔥' : ''} ${eq ? eq + ' — ' : ''}${r.explanation[lang]}` +
       `${productId ? I18N[lang].ai_added_suffix : ''} (${I18N[lang].ai_note})`;
     return {
       name: productId ? CHEMICALS[productId].name : { en: 'Reaction', ar: 'تفاعل', fr: 'Réaction' },
@@ -2451,9 +2583,21 @@
       produces: productId,
     };
   }
-  function aiReactionFor(added) {
-    const a = aiAnswerFor(added);
-    return a && a.reacts ? aiReactionFrom([...added], a) : null;
+  function aiReactionFor(added, heated) {
+    const a = aiAnswerFor(added, heated);
+    return a && a.reacts ? aiReactionFrom([...added], a, heated) : null;
+  }
+
+  /** The burner was just lit: re-test any pair already sitting in the glassware without a reaction. */
+  function retestWithHeat() {
+    if (state.currentExperimentId) return; // guided experiments don't use the AI
+    Object.keys(state.apparatus).forEach((id) => {
+      const apState = state.apparatus[id];
+      const refs = APPARATUS_IDS[id];
+      if (!apState || !refs || apState.resolved || apState.pending || !aiEligible(apState)) return;
+      if (refs.el.dataset.selected !== 'true') return; // only the glassware on show
+      evaluateReaction(id, refs, apState, {});
+    });
   }
 
 
@@ -3535,7 +3679,7 @@
     // Set Beaker as default — and show ONLY it, not all three at once.
     document.querySelector('[data-container="beaker"]').classList.add('active');
     setSelectedApparatus('beaker');
-    updateApparatusVisibility(['beaker']);
+    updateApparatusVisibility(['beaker', 'burner']);
   }
 
   /** Handle apparatus selection from selector icons */
@@ -3548,7 +3692,7 @@
     // Show only the chosen glassware — previously all three stayed visible
     // no matter which one was "selected", which was both confusing and
     // wasted a lot of vertical space on small screens.
-    updateApparatusVisibility([containerId]);
+    updateApparatusVisibility([containerId, 'burner']);
     const containerNames = { beaker: I18N[state.lang].label_beaker, testTube: I18N[state.lang].label_testtube, flask: I18N[state.lang].label_flask };
     logMessage(`${I18N[state.lang].msg_selected}${containerNames[containerId] || containerId}`, 'info');
   }
@@ -3791,8 +3935,10 @@
     
     // === For Free Mode: check against FREE_REACTIONS ===
     let freeReaction = null;
+    // Heated or not? (Chosen once per evaluation so a burner toggled while the AI is thinking can't mix answers up.)
+    const heated = isFreeMode && (opts.heated !== undefined ? opts.heated : isHeating());
     if (isFreeMode) {
-      freeReaction = FREE_REACTIONS.find(r => sameSet(r.needed, apState.added)) || aiReactionFor(apState.added);
+      freeReaction = FREE_REACTIONS.find(r => sameSet(r.needed, apState.added)) || aiReactionFor(apState.added, heated);
     }
 
     apRefs.liquid.style.height = '70%';
@@ -3804,15 +3950,22 @@
       const pair = [...apState.added];
       apState.pending = true;
       apRefs.el.classList.add('is-analyzing');
-      logMessage(I18N[state.lang].ai_analyzing, 'info');
-      askAI(pair).then(() => {
+      logMessage(I18N[state.lang][heated ? 'ai_analyzing_heated' : 'ai_analyzing'], 'info');
+      askAI(pair, heated).then((answer) => {
         apRefs.el.classList.remove('is-analyzing');
         // Reset (which replaces this state object) or mode change while we
         // waited? Then there's nothing left to finish.
         if (state.apparatus[apparatusId] !== apState) return;
         apState.pending = false;
         if (state.currentExperimentId || apState.resolved || !sameSet(apState.added, pair)) return;
-        evaluateReaction(apparatusId, apRefs, apState, { aiTried: true });
+        if (!answer) {
+          // We couldn't ask — that is NOT the same as chemistry saying "no
+          // reaction", so don't claim it. Say what happened and leave the
+          // glassware as it is so the student can Reset and try again.
+          logMessage(`${I18N[state.lang].ai_unavailable}${aiLastError ? ' (' + aiLastError + ')' : ''}`, 'warning');
+          return;
+        }
+        evaluateReaction(apparatusId, apRefs, apState, { aiTried: true, heated });
       });
       return;
     }
@@ -3887,9 +4040,10 @@
 
       let msg;
       if (isFreeMode) {
-        const aiAnswer = aiAnswerFor(apState.added); // the AI said "nothing happens" and why
+        const aiAnswer = aiAnswerFor(apState.added, heated); // the AI said "nothing happens" and why
         msg = aiAnswer && !aiAnswer.reacts
-          ? `🤖 ${aiAnswer.explanation[state.lang]} (${I18N[state.lang].ai_note})`
+          ? `🤖${heated ? ' 🔥' : ''} ${aiAnswer.explanation[state.lang]} (${I18N[state.lang].ai_note})` +
+            (heated ? '' : I18N[state.lang].ai_try_heat)
           : (I18N[state.lang].msg_free_no_reaction || 'No reaction — try different elements!');
       } else {
         msg = exp ? exp.wrongMsg[state.lang] : I18N[state.lang].msg_wrong_start;
@@ -4313,6 +4467,153 @@
     },
   };
 
+  /* ================================================================
+     ACCOUNT — header button + sign-in modal
+     Everyone starts as an anonymous guest (firebase-init.js does that).
+     Signing in (Google / email) upgrades the guest; signing out returns to
+     being a guest. Phone sign-in is a held place (needs a paid Firebase plan).
+  ================================================================ */
+  const account = { user: null, busy: false, subscribed: false };
+  const ACC_ERROR_KEYS = {
+    'auth/invalid-credential': 'acc_err_credentials', 'auth/invalid-login-credentials': 'acc_err_credentials',
+    'auth/wrong-password': 'acc_err_credentials', 'auth/user-not-found': 'acc_err_credentials',
+    'auth/invalid-email': 'acc_err_email', 'auth/missing-email': 'acc_err_email',
+    'auth/email-already-in-use': 'acc_err_in_use',
+    'auth/weak-password': 'acc_err_weak', 'auth/missing-password': 'acc_err_missing',
+    'auth/popup-blocked': 'acc_err_popup',
+    'auth/operation-not-allowed': 'acc_err_disabled',
+    'auth/unauthorized-domain': 'acc_err_domain',
+    'auth/network-request-failed': 'acc_err_network',
+    'auth/too-many-requests': 'acc_err_many',
+  };
+  const ACC_SILENT = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request', 'auth/user-cancelled']; // the person just closed the window
+  const accEl = (id) => document.getElementById(id);
+
+  function showAccMsg(text, isInfo) {
+    const box = accEl('accError');
+    if (!box) return;
+    box.textContent = text || '';
+    box.hidden = !text;
+    box.classList.toggle('is-info', !!isInfo);
+  }
+
+  function accErrorText(err) {
+    const code = err && err.code;
+    if (ACC_SILENT.includes(code)) return '';
+    const t = I18N[state.lang];
+    const key = ACC_ERROR_KEYS[code];
+    return key ? t[key] : `${t.acc_err_generic}${code ? ' (' + code + ')' : ''}`;
+  }
+
+  const accInitial = (user) => {
+    const src = (user && (user.name || user.email)) || '';
+    const first = Array.from(src.trim())[0];
+    return first ? first.toUpperCase() : '?';
+  };
+
+  function renderAccount(user) {
+    const t = I18N[state.lang];
+    const signedIn = !!user && !user.isAnonymous;
+    const btn = accEl('accountBtn');
+    if (btn) {
+      btn.classList.toggle('is-signed-in', signedIn);
+      const label = signedIn ? (user.name || user.email || t.acc_btn_title) : t.acc_guest_name;
+      btn.setAttribute('title', `${t.acc_btn_title}: ${label}`);
+      btn.setAttribute('aria-label', `${t.acc_btn_title}: ${label}`);
+    }
+    const initial = accEl('accountInitial');
+    if (initial) initial.textContent = signedIn ? accInitial(user) : '';
+    const inBox = accEl('accountSignedIn');
+    const outBox = accEl('accountSignedOut');
+    if (inBox) inBox.hidden = !signedIn;
+    if (outBox) outBox.hidden = signedIn;
+    if (signedIn) {
+      const set = (id, v) => { const n = accEl(id); if (n) n.textContent = v; };
+      set('accAvatar', accInitial(user));
+      set('accNameShown', user.name || user.email || '');
+      set('accEmailShown', user.name ? user.email : '');
+      // Save a signed-in student from retyping their name when joining a class.
+      const nameInput = accEl('studentName');
+      if (nameInput && user.name && !nameInput.value) nameInput.value = user.name;
+    }
+  }
+
+  function setAccBusy(on) {
+    ['accGoogleBtn', 'accSignInBtn', 'accSignUpBtn', 'accResetBtn', 'accSignOutBtn'].forEach((id) => {
+      const n = accEl(id);
+      if (n) n.disabled = on;
+    });
+  }
+
+  /** Run one sign-in action: one at a time, with friendly errors. Resolves true on success. */
+  async function runAccountAction(fn) {
+    if (account.busy) return false;
+    if (!window.chemLabAuth) { showAccMsg(I18N[state.lang].acc_err_unavailable); return false; }
+    account.busy = true;
+    showAccMsg('');
+    setAccBusy(true);
+    try {
+      const user = await fn(window.chemLabAuth);
+      account.user = user || window.chemLabAuth.current();
+      renderAccount(account.user);
+      return true;
+    } catch (err) {
+      showAccMsg(accErrorText(err));
+      return false;
+    } finally {
+      account.busy = false;
+      setAccBusy(false);
+    }
+  }
+
+  function readAccountForm() {
+    const val = (id) => { const n = accEl(id); return n ? String(n.value || '').trim() : ''; };
+    return { name: val('accNameInput'), email: val('accEmail'), password: String(accEl('accPassword') ? accEl('accPassword').value || '' : '') };
+  }
+
+  function initAccount() {
+    const subscribe = () => {
+      if (!window.chemLabAuth || account.subscribed) return;
+      account.subscribed = true;
+      window.chemLabAuth.onChange((u) => { account.user = u; renderAccount(u); });
+    };
+    subscribe();
+    if (!account.subscribed) window.addEventListener('chemlab-cloud-ready', subscribe, { once: true });
+    renderAccount(account.user);
+
+    const on = (id, evt, fn) => { const n = accEl(id); if (n) n.addEventListener(evt, fn); };
+    const t = () => I18N[state.lang];
+    const finish = (ok) => { if (ok) { closeModal('accountModal'); const pw = accEl('accPassword'); if (pw) pw.value = ''; } };
+
+    on('accountBtn', 'click', () => { showAccMsg(''); openModal('accountModal'); });
+
+    on('accGoogleBtn', 'click', async () => finish(await runAccountAction((a) => a.signInWithGoogle())));
+
+    on('accEmailForm', 'submit', async (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      const { email, password } = readAccountForm();
+      if (!email) return showAccMsg(t().acc_err_email);
+      if (!password) return showAccMsg(t().acc_err_missing);
+      finish(await runAccountAction((a) => a.signInWithEmail(email, password)));
+    });
+
+    on('accSignUpBtn', 'click', async () => {
+      const { name, email, password } = readAccountForm();
+      if (!email) return showAccMsg(t().acc_err_email);
+      if (password.length < 6) return showAccMsg(t().acc_err_weak);
+      finish(await runAccountAction((a) => a.signUpWithEmail(email, password, name)));
+    });
+
+    on('accResetBtn', 'click', async () => {
+      const { email } = readAccountForm();
+      if (!email) return showAccMsg(t().acc_err_email);
+      await runAccountAction(async (a) => { await a.resetPassword(email); showAccMsg(t().acc_reset_sent, true); return null; });
+    });
+
+    on('accSignOutBtn', 'click', async () => finish(await runAccountAction((a) => a.signOutUser())));
+    // accPhoneBtn is deliberately inert (disabled in the HTML) until phone sign-in is set up.
+  }
+
   function init() {
     console.log('🚀 APP INITIALIZING...');
     
@@ -4405,6 +4706,7 @@
         el.burnerKnob.setAttribute('aria-pressed', String(lit));
         el.burner.dataset.armed = String(lit);
         if (lit) playTone(180, 0.15, 'sawtooth');
+        if (lit) retestWithHeat();
       });
       
       el.resetBtn.addEventListener('click', resetLab);
@@ -4559,6 +4861,7 @@
       }
     });
     
+    try { initAccount(); } catch (e) { console.error('❌ Error initializing account UI:', e); }
     console.log('✅ APP INITIALIZED COMPLETE');
     // Simulated first-load delay so the loading animation is actually seen.
     showLoading(1100, () => {

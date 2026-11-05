@@ -79,6 +79,12 @@
 
       <!-- Header utility actions -->
       <div class="header-actions">
+        <!-- Account: guest by default; opens the sign-in modal -->
+        <button class="icon-btn account-btn" id="accountBtn" aria-haspopup="dialog" title="Account">
+          <svg class="account-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 12a4.5 4.5 0 100-9 4.5 4.5 0 000 9zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5z"/></svg>
+          <span class="account-initial" id="accountInitial" aria-hidden="true"></span>
+        </button>
+
         <!-- Live score / progress chip, visible once a student starts -->
         <div class="score-chip" id="scoreChip" title="Your score">
           <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26L21 9.27l-4.5 4.39L17.8 21 12 17.77 6.2 21l1.3-7.34L3 9.27l6.1-1.01z"/></svg>
@@ -709,6 +715,59 @@
   ============================================================= -->
 
   <!-- Safety instructions popup -->
+  <!-- Account / sign-in. Everyone is a guest until they sign in; signing in upgrades the guest. -->
+  <div class="modal-overlay" id="accountModal" hidden>
+    <div class="modal account-modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+      <button class="modal-close" data-close-modal="accountModal" aria-label="Close">✕</button>
+      <h2 id="accountModalTitle" data-i18n="acc_title">Your account</h2>
+
+      <!-- Shown when signed in with a real account -->
+      <div id="accountSignedIn" hidden>
+        <div class="account-card">
+          <div class="account-avatar" id="accAvatar">?</div>
+          <div>
+            <p class="account-name" id="accNameShown"></p>
+            <p class="account-email" id="accEmailShown"></p>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="accSignOutBtn" type="button" data-i18n="acc_signout">Sign out</button>
+      </div>
+
+      <!-- Shown for guests -->
+      <div id="accountSignedOut">
+        <p class="account-note" data-i18n="acc_guest_note">You're playing as a guest. Sign in to use your own name on any device.</p>
+
+        <button class="btn provider-btn" id="accGoogleBtn" type="button">
+          <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span data-i18n="acc_google">Continue with Google</span>
+        </button>
+
+        <div class="account-divider"><span data-i18n="acc_or_email">or with email</span></div>
+
+        <form id="accEmailForm" novalidate>
+          <input class="account-input" id="accNameInput" type="text" autocomplete="name" maxlength="40" data-i18n-placeholder="acc_name_ph" placeholder="Your name (for a new account)">
+          <input class="account-input" id="accEmail" type="email" autocomplete="email" inputmode="email" data-i18n-placeholder="acc_email_ph" placeholder="Email">
+          <input class="account-input" id="accPassword" type="password" autocomplete="current-password" data-i18n-placeholder="acc_password_ph" placeholder="Password (6+ characters)">
+          <p class="account-error" id="accError" role="alert" hidden></p>
+          <div class="account-actions">
+            <button class="btn btn-primary" id="accSignInBtn" type="submit" data-i18n="acc_signin">Sign in</button>
+            <button class="btn btn-ghost" id="accSignUpBtn" type="button" data-i18n="acc_signup">Create account</button>
+          </div>
+          <button class="account-link" id="accResetBtn" type="button" data-i18n="acc_forgot">Forgot password?</button>
+        </form>
+
+        <!-- Phone sign-in needs SMS, which Firebase only offers on the paid (Blaze) plan — place held for later. -->
+        <button class="btn provider-btn is-soon" id="accPhoneBtn" type="button" disabled aria-disabled="true">
+          <span aria-hidden="true">📱</span>
+          <span data-i18n="acc_phone">Continue with phone</span>
+          <em class="soon-badge" data-i18n="acc_soon">Soon</em>
+        </button>
+
+        <button class="btn btn-ghost account-guest-btn" type="button" data-close-modal="accountModal" data-i18n="acc_guest_btn">Continue as guest</button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="safetyModal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="safetyModalTitle">
       <button class="modal-close" data-close-modal="safetyModal" aria-label="Close">✕</button>
