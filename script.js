@@ -38,7 +38,7 @@
   // Free Lab AI helper: a Cloudflare Worker that holds the API key and asks
   // Claude. Set to '' to switch the feature off completely.
   const AI_ENDPOINT = 'https://chemlab-ai.lama-a-com.workers.dev/';
-  const AI_TIMEOUT_MS = 20000;
+  const AI_TIMEOUT_MS = 40000;
 
   /* ----------------------------------------------------------------
      1. APP STATE
@@ -597,12 +597,6 @@
   I18N.en.acc_forgot = "Forgot password?";
   I18N.ar.acc_forgot = "نسيت كلمة المرور؟";
   I18N.fr.acc_forgot = "Mot de passe oublié ?";
-  I18N.en.acc_phone = "Continue with phone";
-  I18N.ar.acc_phone = "المتابعة برقم الجوال";
-  I18N.fr.acc_phone = "Continuer avec le téléphone";
-  I18N.en.acc_soon = "Soon";
-  I18N.ar.acc_soon = "قريباً";
-  I18N.fr.acc_soon = "Bientôt";
   I18N.en.acc_guest_btn = "Continue as guest";
   I18N.ar.acc_guest_btn = "المتابعة كزائر";
   I18N.fr.acc_guest_btn = "Continuer en invité";
@@ -2464,7 +2458,8 @@
   // ---- remembered on this device -------------------------------------------
   let aiCache = {};      // "a+b" → the (validated) answer, positive or negative
   let aiCompounds = {};  // id → full chemical entry for compounds the AI introduced
-  try { aiCache = JSON.parse(localStorage.getItem('chemlab_ai_cache') || '{}') || {}; } catch (e) { aiCache = {}; }
+  try { localStorage.removeItem('chemlab_ai_cache'); } catch (e) { /* v1 answers used the stricter rule */ }
+  try { aiCache = JSON.parse(localStorage.getItem('chemlab_ai_cache_v2') || '{}') || {}; } catch (e) { aiCache = {}; }
   try { aiCompounds = JSON.parse(localStorage.getItem('chemlab_ai_compounds') || '{}') || {}; } catch (e) { aiCompounds = {}; }
   Object.keys(aiCache).forEach((k) => { const n = normalizeAiResult(aiCache[k]); if (n) aiCache[k] = n; else delete aiCache[k]; });
   Object.keys(aiCompounds).forEach((id) => {
@@ -2473,7 +2468,7 @@
   });
   function saveAi() {
     try {
-      localStorage.setItem('chemlab_ai_cache', JSON.stringify(aiCache));
+      localStorage.setItem('chemlab_ai_cache_v2', JSON.stringify(aiCache));
       localStorage.setItem('chemlab_ai_compounds', JSON.stringify(aiCompounds));
     } catch (e) { /* storage full / blocked: the feature still works for this session */ }
   }
@@ -2576,7 +2571,7 @@
     const text = (lang) => `${warn}🤖${heated ? ' 🔥' : ''} ${eq ? eq + ' — ' : ''}${r.explanation[lang]}` +
       `${productId ? I18N[lang].ai_added_suffix : ''} (${I18N[lang].ai_note})`;
     return {
-      name: productId ? CHEMICALS[productId].name : { en: 'Reaction', ar: 'تفاعل', fr: 'Réaction' },
+      name: productId ? CHEMICALS[productId].name : { en: 'Visible change', ar: 'تغيّر ملحوظ', fr: 'Changement visible' },
       needed: pair,
       result: { color: 'color-' + r.color, text: { en: text('en'), ar: text('ar'), fr: text('fr') } },
       heat: r.heat, precipitate: r.precipitate, bubbles: r.bubbles,
@@ -3713,6 +3708,10 @@
     });
     const showBurner = !neededList || neededList.includes('burner');
     el.burner.classList.toggle('is-hidden-tool', !showBurner);
+    // Burner + exactly one piece of glassware → stand the glassware above the burner.
+    const vessels = Object.values(APPARATUS_IDS).filter((refs) => !refs.el.classList.contains('is-hidden-tool')).length;
+    const bench = document.getElementById('benchSurface');
+    if (bench) bench.classList.toggle('is-stacked', showBurner && vessels === 1);
   }
 
   function buildBottleEl(chemId) {
@@ -4471,7 +4470,7 @@
      ACCOUNT — header button + sign-in modal
      Everyone starts as an anonymous guest (firebase-init.js does that).
      Signing in (Google / email) upgrades the guest; signing out returns to
-     being a guest. Phone sign-in is a held place (needs a paid Firebase plan).
+     being a guest.
   ================================================================ */
   const account = { user: null, busy: false, subscribed: false };
   const ACC_ERROR_KEYS = {
@@ -4611,7 +4610,6 @@
     });
 
     on('accSignOutBtn', 'click', async () => finish(await runAccountAction((a) => a.signOutUser())));
-    // accPhoneBtn is deliberately inert (disabled in the HTML) until phone sign-in is set up.
   }
 
   function init() {

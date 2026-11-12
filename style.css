@@ -2124,14 +2124,6 @@ input.is-hand-hovered {
   background: #ffffff; color: #1f2937; border: 1px solid rgba(0,0,0,0.12); font-weight: 600;
 }
 .provider-btn:hover:not(:disabled) { background: #f1f5f9; }
-.provider-btn:disabled, .provider-btn.is-soon {
-  background: rgba(255,255,255,0.05); color: var(--text-onDark-muted);
-  border: 1px dashed var(--border-glow); cursor: not-allowed; opacity: 0.75; margin-top: 12px;
-}
-.soon-badge {
-  font-style: normal; font-size: 0.7rem; padding: 2px 8px; border-radius: 999px;
-  background: rgba(245,166,35,0.2); color: var(--warning);
-}
 .account-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; color: var(--text-onDark-muted); font-size: 0.8rem; }
 .account-divider::before, .account-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-glow); }
 .account-input {
@@ -2157,6 +2149,20 @@ input.is-hand-hovered {
 @media (max-width: 480px) {
   .header-actions { gap: 6px; }
   .header-actions .icon-btn { width: 34px; height: 34px; }
+}
+
+/* Vessel above the burner.
+   Whenever the burner is on show next to a single piece of glassware (Free Lab,
+   and guided experiments that heat), the glassware stands ABOVE the burner —
+   centred over it, clear of the flame — instead of sitting beside it.
+   Numbers come from the burner's own size: 94px wide, flame tip ~64px above
+   its base, so the glass is lifted 66px. */
+.bench-surface.is-stacked > .burner {
+  position: absolute; left: calc(50% - 47px); bottom: 24px; z-index: 1;
+}
+.bench-surface.is-stacked > .apparatus:not(.burner):not(.is-hidden-tool) { margin-bottom: 66px; position: relative; z-index: 2; }
+@media (max-width: 680px) {
+  .bench-surface.is-stacked > .burner { bottom: 18px; }
 }
 
 /* ------------------------------------------------------------------
