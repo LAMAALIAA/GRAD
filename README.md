@@ -239,9 +239,7 @@ This project is a CS graduation project. Attribution appreciated.
 
 ## 🙏 Credits
 
-- **Created by**: [Your Name]
-- **School/University**: [Institution]
-- **Supervised by**: [Professor Name]
+- **Created by**:Lama Ali Alrebh 
 - **Built with**: HTML5, CSS3, JavaScript ES6+
 
 ## 📞 Support & Contact
