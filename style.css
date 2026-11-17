@@ -1921,7 +1921,13 @@ input.is-hand-hovered {
 }
 
 @media (max-width: 820px) {
-  .lab-scene-bg { display: none; }
+  /* The wall decoration (cabinet, desk, jars) stays hidden on small screens, but the
+     chalkboard — experiment name, formula and explanation — is the part students
+     actually read, so it stays: a banner centred above the glassware, with room
+     reserved for it at the top of the bench so it never sits on top of the glass. */
+  .lab-scene-bg > :not(.scene-board) { display: none; }
+  .scene-board { top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 380px; }
+  .lab-bench .bench-surface { padding-top: 160px; }
 }
 
 @media (max-width: 680px) {
