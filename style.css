@@ -1802,7 +1802,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 }
 
 .leaderboard-row {
-  display: grid; grid-template-columns: 45px 1fr 120px 74px;
+  display: grid; grid-template-columns: 45px 1fr 120px 92px;
   align-items: center; padding: 12px 15px;
   border-bottom: 1px solid rgba(125, 211, 252, 0.1);
   gap: 12px;
@@ -1927,7 +1927,18 @@ input.is-hand-hovered {
      reserved for it at the top of the bench so it never sits on top of the glass. */
   .lab-scene-bg > :not(.scene-board) { display: none; }
   .scene-board { top: 12px; left: 50%; transform: translateX(-50%); width: calc(100% - 24px); max-width: 380px; }
-  .lab-bench .bench-surface { padding-top: 160px; }
+  .lab-bench .bench-surface { padding-top: 200px; }
+  /* The chalkboard already shows the experiment's name and description, so the header
+     above the bench repeating them just pushes the glassware further down the screen. */
+  .lab-experiment-info { display: none; }
+  .lab-bench-header { margin-bottom: 10px; padding-bottom: 10px; }
+  /* The board text was sized for a 280px desktop board (9–10px type). Shown on a phone it has to be readable,
+     and the frame must be able to grow with the text instead of cropping it (explanation capped so it can't
+     push into the glassware — 200px above covers frame max ~171px + offset + tray). */
+  .board-frame { height: auto; min-height: 132px; }
+  .board-chalk-line { font-size: 1rem; }
+  .board-chalk-line.small { font-size: 0.78rem; }
+  .board-chalk-explanation { font-size: 0.74rem; max-height: 5.5rem; overflow-y: auto; }
 }
 
 @media (max-width: 680px) {
@@ -2007,7 +2018,7 @@ input.is-hand-hovered {
      surrounding padding is taken into account — shrink the two side
      columns and let the name keep the rest. */
   .leaderboard-row {
-    grid-template-columns: 32px 1fr 70px 58px;
+    grid-template-columns: 32px 1fr 64px 72px;
     padding: 10px 8px;
     gap: 8px;
   }
@@ -2169,6 +2180,76 @@ input.is-hand-hovered {
 .bench-surface.is-stacked > .apparatus:not(.burner):not(.is-hidden-tool) { margin-bottom: 66px; position: relative; z-index: 2; }
 @media (max-width: 680px) {
   .bench-surface.is-stacked > .burner { bottom: 18px; }
+}
+
+/* ------------------------------------------------------------------
+   PHONE SIZING (round 2): finger-sized targets, buttons that can wrap, dynamic viewport height
+------------------------------------------------------------------ */
+/* the features block now ends the Home page — give it room above the footer */
+.about-section { padding-bottom: 56px; }
+
+/* tiny round "i" on each bottle was 18px: too small for a fingertip — widen the touch area, not the look */
+@media (hover: none) and (pointer: coarse) {
+  .bottle-info-btn::after { content: ''; position: absolute; inset: -10px; }
+}
+@media (max-width: 680px) {
+  .modal-close { width: 40px; height: 40px; }
+}
+/* long French / Arabic button labels must wrap rather than run off a 320px screen */
+@media (max-width: 480px) {
+  .btn { white-space: normal; line-height: 1.25; }
+  .tutorial-actions { flex-wrap: wrap; }
+}
+/* 100vh includes the phone's collapsing address bar, so a shelf sized to it can end up hidden behind the bar.
+   100dvh follows the visible height. Only for the sizes where the shelf is a tall side panel (the ≤680px strip is unlimited). */
+@supports (height: 100dvh) {
+  @media (min-width: 681px) { .chemical-shelf { max-height: calc(100dvh - var(--header-h) - 32px); } }
+  @media (min-width: 681px) and (max-width: 980px) { .chemical-shelf { max-height: calc(100dvh - var(--header-h) - 24px); } }
+}
+
+/* ------------------------------------------------------------------
+   CLASS MODE: student's clock, results, winner banner
+------------------------------------------------------------------ */
+.class-timer {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 6px 12px; border-radius: 999px; font-size: 0.85rem;
+  background: rgba(245,166,35,0.14); border: 1px solid rgba(245,166,35,0.45); color: var(--text-onDark);
+  font-family: 'JetBrains Mono', monospace;
+}
+.class-timer[hidden] { display: none; }
+.class-timer b { font-weight: 700; }
+.class-timer-progress { color: var(--text-onDark-muted); font-size: 0.78rem; }
+.class-timer.is-done { background: rgba(34,197,94,0.16); border-color: rgba(34,197,94,0.55); }
+.lab-toolbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.winner-banner {
+  margin: 0 0 14px; padding: 12px 14px; border-radius: 10px; line-height: 1.6; font-weight: 700;
+  background: linear-gradient(135deg, rgba(245,166,35,0.22), rgba(34,197,94,0.18));
+  border: 1px solid rgba(245,166,35,0.55); color: var(--text-onDark);
+}
+.winner-banner[hidden] { display: none; }
+.leaderboard-row.is-done .leaderboard-status { color: #86efac; }
+
+.class-results-modal { max-width: 420px; width: calc(100vw - 32px); max-height: 90vh; overflow-y: auto; text-align: center; }
+.cr-label { margin: 6px 0 0; color: var(--text-onDark-muted); font-size: 0.85rem; }
+.cr-time { margin: 0; font-size: 2.6rem; font-weight: 700; color: var(--cyan); font-family: 'JetBrains Mono', monospace; }
+.cr-sub { margin: 4px 0 12px; color: var(--text-onDark-muted); font-size: 0.9rem; line-height: 1.5; }
+.cr-winner {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-weight: 700;
+  background: linear-gradient(135deg, rgba(245,166,35,0.22), rgba(34,197,94,0.18)); border: 1px solid rgba(245,166,35,0.55);
+}
+.cr-winner[hidden] { display: none; }
+.cr-standings-title { margin: 8px 0; font-size: 0.9rem; color: var(--text-onDark-muted); text-align: start; }
+.cr-list { list-style: none; margin: 0 0 16px; padding: 0; text-align: start; }
+.cr-row { display: grid; grid-template-columns: 44px 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--border-glow); }
+.cr-row.is-me { background: rgba(0,184,217,0.14); border-radius: 8px; }
+.cr-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-ttime { font-family: 'JetBrains Mono', monospace; color: var(--text-onDark-muted); }
+
+/* Free Lab / lab page on a phone: the lab itself first, the log and score underneath.
+   (The sidebar used to come BEFORE the shelf and bench, so the glassware sat a whole screen down.) */
+@media (max-width: 680px) {
+  .lab-sidebar { order: 3; }
 }
 
 /* ------------------------------------------------------------------

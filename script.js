@@ -643,6 +643,41 @@
   I18N.ar.acc_err_generic = "حدث خطأ ما";
   I18N.fr.acc_err_generic = "Une erreur est survenue";
 
+  // Class results / timing
+  I18N.en.cr_title = "Your result";
+  I18N.ar.cr_title = "نتيجتك";
+  I18N.fr.cr_title = "Ton résultat";
+  I18N.en.cr_time = "Your time";
+  I18N.ar.cr_time = "وقتك";
+  I18N.fr.cr_time = "Ton temps";
+  I18N.en.cr_standings = "Standings";
+  I18N.ar.cr_standings = "الترتيب";
+  I18N.fr.cr_standings = "Classement";
+  I18N.en.cr_back = "Back to experiments";
+  I18N.ar.cr_back = "العودة للتجارب";
+  I18N.fr.cr_back = "Retour aux expériences";
+  I18N.en.cr_rank = "Rank {r} of {n}";
+  I18N.ar.cr_rank = "المركز {r} من {n}";
+  I18N.fr.cr_rank = "Rang {r} sur {n}";
+  I18N.en.cr_rank_sofar = "Rank {r} of {n} so far";
+  I18N.ar.cr_rank_sofar = "المركز {r} من {n} حتى الآن";
+  I18N.fr.cr_rank_sofar = "Rang {r} sur {n} pour l'instant";
+  I18N.en.cr_waiting = "Waiting for the other students to finish…";
+  I18N.ar.cr_waiting = "بانتظار بقية الطلاب لينهوا…";
+  I18N.fr.cr_waiting = "En attente que les autres élèves terminent…";
+  I18N.en.cr_all_done = "Everyone has finished!";
+  I18N.ar.cr_all_done = "أنهى الجميع!";
+  I18N.fr.cr_all_done = "Tout le monde a terminé !";
+  I18N.en.cr_winner = "Winner";
+  I18N.ar.cr_winner = "الفائز";
+  I18N.fr.cr_winner = "Gagnant";
+  I18N.en.cr_progress = "{c} of {n} experiments done — finish all of them to get your time";
+  I18N.ar.cr_progress = "أنجزت {c} من {n} — أنهِ جميع التجارب لتحصل على وقتك";
+  I18N.fr.cr_progress = "{c} expériences sur {n} — termine-les toutes pour obtenir ton temps";
+  I18N.en.timer_title = "Your time — tap for the ranking";
+  I18N.ar.timer_title = "وقتك — اضغط لعرض الترتيب";
+  I18N.fr.timer_title = "Ton temps — touche pour le classement";
+
   /** Translate every [data-i18n] element + set <html lang/dir>. */
   function applyTranslations() {
     const dict = I18N[state.lang];
@@ -3339,6 +3374,7 @@
         console.log('🛑 Stopping live leaderboard updates');
         teacherLeaderboardUnsubscribe();
         teacherLeaderboardUnsubscribe = null;
+        stopTeacherTicker();
       }
       
       // Re-attach the live listener if returning to teacher-setup with an
@@ -3347,7 +3383,7 @@
         console.log('▶️  Re-attaching live leaderboard listener');
         teacherLeaderboardUnsubscribe = window.chemLabCloud.listenToCompetition(competition.code, (data) => {
           if (!data) return;
-          competition.students = data.students || {};
+          competition.students = normalizeStudents(data.students);
           updateTeacherLeaderboard();
         });
       }
@@ -3576,6 +3612,7 @@
     opts = opts || {};
     const exp = EXPERIMENTS[experimentId];
     state.currentExperimentId = experimentId;
+    if (competition.mode === 'class' && competition.studentName) markStudentStarted();
     el.labExperimentTitle.textContent = exp.name[state.lang];
 
     // Update the chalkboard with experiment name and formula
@@ -4783,22 +4820,31 @@
         // Solo mode (and any other guided-experiment context): advance
         // through the full 16-experiment grid order instead of just
         // dumping back to the grid — "Next" should actually mean next.
-        const sequence = (competition.mode === 'class' && competition.studentName && competition.selectedExperiments && competition.selectedExperiments.length > 0)
-          ? competition.selectedExperiments
-          : ALL_EXPERIMENT_IDS;
+        const isClassStudent = competition.mode === 'class' && !!competition.studentName &&
+          !!competition.selectedExperiments && competition.selectedExperiments.length > 0;
+        const sequence = isClassStudent ? competition.selectedExperiments : ALL_EXPERIMENT_IDS;
+        let nextExpId = null;
+        if (isClassStudent) {
+          // Next = the next experiment in the teacher's list that this student has not done yet,
+          // wrapping round — so starting anywhere in the list still leads through all of them.
+          const doneIds = normalizeStudent(competition.students[competition.studentName]).experiments;
+          const from = sequence.indexOf(state.currentExperimentId);
+          for (let step = 1; step <= sequence.length; step++) {
+            const id = sequence[(from + step + sequence.length) % sequence.length];
+            if (!doneIds.includes(id)) { nextExpId = id; break; }
+          }
+        } else {
+          const currentIdx = sequence.indexOf(state.currentExperimentId);
+          if (currentIdx !== -1 && currentIdx + 1 < sequence.length) nextExpId = sequence[currentIdx + 1];
+        }
 
-        const currentIdx = sequence.indexOf(state.currentExperimentId);
-        const nextIdx = currentIdx + 1;
-
-        console.log(`Index: ${currentIdx} → ${nextIdx}/${sequence.length}`, sequence);
-
-        if (currentIdx !== -1 && nextIdx < sequence.length) {
-          const nextExpId = sequence[nextIdx];
-          console.log(`📌 LOADING: ${nextExpId}`);
+        console.log('➡️ Next experiment:', nextExpId, '| class student:', isClassStudent);
+        if (nextExpId) {
           renderExperimentInLab(nextExpId);
           showPage('lab');
+        } else if (isClassStudent) {
+          openClassResults(); // nothing left to do: show the time and the standings
         } else {
-          console.log('✅ ALL DONE (or free mode) - Going to experiments');
           showPage('experiments');
         }
         return;
@@ -4860,6 +4906,7 @@
     });
     
     try { initAccount(); } catch (e) { console.error('❌ Error initializing account UI:', e); }
+    try { initClassUI(); } catch (e) { console.error('❌ Error initializing class UI:', e); }
     console.log('✅ APP INITIALIZED COMPLETE');
     // Simulated first-load delay so the loading animation is actually seen.
     showLoading(1100, () => {
@@ -4910,6 +4957,213 @@
     return `${minutes}:${String(seconds).padStart(2, '0')}`;
   }
 
+  /* ================================================================
+     CLASS TIMING, RANKING AND RESULTS
+     Each student is timed from the moment they open their FIRST experiment
+     until they finish their LAST one. The teacher sees every student's time
+     live, and once everyone has finished the winner is announced; each
+     student gets the same standings on their own device.
+  ================================================================ */
+  const escHtml = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /** Firebase drops empty lists, so a saved record can arrive WITHOUT `experiments` —
+   *  that used to crash the success path (no popup, no Next). Always rebuild a full record. */
+  function normalizeStudent(rec) {
+    const r = rec && typeof rec === 'object' ? rec : {};
+    const list = Array.isArray(r.experiments) ? r.experiments : Object.values(r.experiments || {});
+    return {
+      completed: Number(r.completed) || 0,
+      startTime: Number(r.startTime) || 0,      // when they joined
+      startedAt: Number(r.startedAt) || 0,      // when they opened their first experiment (the clock starts here)
+      finishTime: Number(r.finishTime) || 0,    // when they finished their last one
+      experiments: list.filter((x) => typeof x === 'string'),
+    };
+  }
+  function normalizeStudents(map) {
+    const out = {};
+    Object.entries(map || {}).forEach(([name, rec]) => { out[name] = normalizeStudent(rec); });
+    return out;
+  }
+
+  // Older records had no startedAt; for those that already finished, joining time is the best we have.
+  const studentStart = (r) => r.startedAt || (r.finishTime ? r.startTime : 0);
+  const studentDuration = (r, now = Date.now()) => {
+    const s = studentStart(r);
+    return s ? Math.max(0, (r.finishTime || now) - s) : null;
+  };
+
+  /** Finished students ranked by total time (fastest first), then everyone else by progress. */
+  function computeStandings(students, total) {
+    const rows = Object.entries(students || {}).map(([name, raw]) => {
+      const r = normalizeStudent(raw);
+      return { name, r, done: total > 0 && r.completed >= total && !!r.finishTime };
+    });
+    const finished = rows.filter((x) => x.done)
+      .sort((a, b) => (studentDuration(a.r) - studentDuration(b.r)) || a.name.localeCompare(b.name));
+    const rest = rows.filter((x) => !x.done)
+      .sort((a, b) => (b.r.completed - a.r.completed) || ((a.r.startTime || 0) - (b.r.startTime || 0)));
+    return { finished, rest, ordered: [...finished, ...rest], allDone: rows.length > 0 && rest.length === 0 };
+  }
+
+  /** Database keys can't contain . # $ [ ] / — "Dr. Ali" used to fail to join with a misleading
+   *  "couldn't connect" error. Names are also shown on the teacher's screen, so strip tags too. */
+  const cleanStudentName = (raw) => String(raw || '').replace(/[.#$\[\]\/\\]/g, ' ').replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ').trim().slice(0, 30);
+
+  function syncStudent(name, rec) {
+    if (window.chemLabCloud && window.chemLabCloud.ready && competition.code) {
+      window.chemLabCloud.saveStudent(competition.code, name, rec)
+        .then(() => console.log('✅ Progress synced to server'))
+        .catch((err) => console.error('❌ Failed to sync progress to server:', err));
+    }
+  }
+
+  /** The clock starts when a class student opens their first experiment. */
+  function markStudentStarted() {
+    const name = competition.studentName;
+    if (competition.mode !== 'class' || !name) return;
+    const s = competition.students[name] = normalizeStudent(competition.students[name]);
+    if (!s.startedAt) {
+      s.startedAt = Date.now();
+      saveCompetitionData();
+      syncStudent(name, s);
+    }
+    if (s.finishTime) renderClassTimer(); else startClassTimer();
+  }
+
+  // ---- the student's own timer chip (tap it for the ranking) ----
+  let classTimerId = null;
+  function renderClassTimer() {
+    const chip = document.getElementById('classTimer');
+    if (!chip) return;
+    const name = competition.studentName;
+    const total = competition.selectedExperiments.length;
+    const active = competition.mode === 'class' && !!name && total > 0;
+    chip.hidden = !active;
+    if (!active) return;
+    const s = normalizeStudent(competition.students[name]);
+    const dur = studentDuration(s);
+    const val = document.getElementById('classTimerValue');
+    if (val) val.textContent = dur === null ? '0:00' : formatDuration(dur);
+    const prog = document.getElementById('classProgress');
+    if (prog) prog.textContent = `${s.completed}/${total}`;
+    chip.classList.toggle('is-done', !!s.finishTime);
+  }
+  function startClassTimer() {
+    renderClassTimer();
+    if (classTimerId) return;
+    classTimerId = setInterval(() => {
+      renderClassTimer();
+      const name = competition.studentName;
+      const s = name ? normalizeStudent(competition.students[name]) : null;
+      if (!s || s.finishTime || competition.mode !== 'class') stopClassTimer();
+    }, 1000);
+  }
+  function stopClassTimer() {
+    if (classTimerId) { clearInterval(classTimerId); classTimerId = null; }
+    renderClassTimer();
+  }
+
+  // ---- the student's result + live standings ----
+  let studentStandingsUnsub = null;
+  let classStandings = null;  // everyone, from the server (the student's own record is always taken from this device)
+  function startStudentStandingsListener() {
+    if (studentStandingsUnsub || !competition.code || !window.chemLabCloud || !window.chemLabCloud.ready) return;
+    studentStandingsUnsub = window.chemLabCloud.listenToCompetition(competition.code, (data) => {
+      if (data) classStandings = normalizeStudents(data.students);
+      const modal = document.getElementById('classResultsModal');
+      if (modal && !modal.hidden) renderClassResults();
+    }) || (() => {});
+  }
+  function stopStudentStandings() {
+    if (studentStandingsUnsub) studentStandingsUnsub();
+    studentStandingsUnsub = null;
+    classStandings = null;
+  }
+
+  function renderClassResults() {
+    const t = I18N[state.lang];
+    const total = competition.selectedExperiments.length;
+    const me = competition.studentName;
+    const everyone = classStandings ? { ...classStandings } : {};
+    if (me) everyone[me] = normalizeStudent(competition.students[me]); // our own copy is the freshest
+    const standings = computeStandings(everyone, total);
+    const mine = standings.ordered.find((x) => x.name === me);
+    const set = (id, text) => { const n = document.getElementById(id); if (n) n.textContent = text; };
+
+    const done = !!(mine && mine.done);
+    set('crTime', done ? formatDuration(studentDuration(mine.r)) : '—');
+    if (done) {
+      const rank = standings.finished.findIndex((x) => x.name === me) + 1;
+      const key = standings.allDone ? 'cr_rank' : 'cr_rank_sofar';
+      set('crSub', t[key].replace('{r}', rank).replace('{n}', standings.ordered.length) + (standings.allDone ? '' : ' · ' + t.cr_waiting));
+    } else {
+      set('crSub', t.cr_progress.replace('{c}', mine ? mine.r.completed : 0).replace('{n}', total));
+    }
+
+    const winnerEl = document.getElementById('crWinner');
+    if (winnerEl) {
+      if (standings.allDone && standings.finished.length) {
+        const w = standings.finished[0];
+        winnerEl.hidden = false;
+        winnerEl.textContent = `🏆 ${t.cr_winner}: ${w.name} — ${formatDuration(studentDuration(w.r))}`;
+      } else {
+        winnerEl.hidden = true;
+      }
+    }
+
+    const list = document.getElementById('crList');
+    if (list) {
+      list.innerHTML = '';
+      const medals = ['🥇', '🥈', '🥉'];
+      standings.ordered.slice(0, 10).forEach((x, idx) => {
+        const li = document.createElement('li');
+        li.className = 'cr-row' + (x.name === me ? ' is-me' : '');
+        const rank = document.createElement('span');
+        rank.className = 'cr-rank';
+        rank.textContent = (x.done && medals[idx]) || `#${idx + 1}`;
+        const nm = document.createElement('span');
+        nm.className = 'cr-name';
+        nm.textContent = x.name;
+        const tm = document.createElement('span');
+        tm.className = 'cr-ttime';
+        tm.textContent = x.done ? formatDuration(studentDuration(x.r)) : `${x.r.completed}/${total}`;
+        li.appendChild(rank); li.appendChild(nm); li.appendChild(tm);
+        list.appendChild(li);
+      });
+    }
+  }
+  function openClassResults() {
+    renderClassResults();
+    openModal('classResultsModal');
+  }
+
+  // ---- the teacher's live clock: times keep ticking until everyone has finished ----
+  let teacherTickerId = null;
+  function startTeacherTicker() {
+    if (teacherTickerId) return;
+    teacherTickerId = setInterval(() => {
+      if (competition.mode === 'class' && competition.code) updateTeacherLeaderboard();
+    }, 1000);
+  }
+  function stopTeacherTicker() {
+    if (teacherTickerId) { clearInterval(teacherTickerId); teacherTickerId = null; }
+  }
+
+  /** Wire the student's timer chip / results modal, and pick the session back up after a page refresh. */
+  function initClassUI() {
+    const timer = document.getElementById('classTimer');
+    if (timer) timer.addEventListener('click', openClassResults);
+    const back = document.getElementById('crBackBtn');
+    if (back) back.addEventListener('click', () => { closeModal('classResultsModal'); showPage('experiments'); });
+    if (competition.mode === 'class' && competition.studentName && competition.code) {
+      startStudentStandingsListener();
+      const s = normalizeStudent(competition.students[competition.studentName]);
+      if (s.startedAt && !s.finishTime) startClassTimer(); else renderClassTimer();
+    }
+  }
+
   function saveCompetitionData() {
     localStorage.setItem('chemlab_competition', JSON.stringify(competition));
   }
@@ -4917,6 +5171,7 @@
   function loadCompetitionData() {
     const data = localStorage.getItem('chemlab_competition');
     if (data) Object.assign(competition, JSON.parse(data));
+    competition.students = normalizeStudents(competition.students);
   }
 
   function buildTeacherExperimentsChecklist() {
@@ -5030,7 +5285,7 @@
     if (teacherLeaderboardUnsubscribe) teacherLeaderboardUnsubscribe();
     teacherLeaderboardUnsubscribe = window.chemLabCloud.listenToCompetition(competition.code, (data) => {
       if (!data) return;
-      competition.students = data.students || {};
+      competition.students = normalizeStudents(data.students);
       updateTeacherLeaderboard();
     });
 
@@ -5044,8 +5299,8 @@
       console.warn('⚠️ Leaderboard element not found');
       return;
     }
-
-    const totalExperiments = competition.selectedExperiments.length;
+    const t = I18N[state.lang];
+    const total = competition.selectedExperiments.length;
 
     // Keep the "X/30 joined" badge in sync too.
     const countCurrentEl = document.getElementById('studentCountCurrent');
@@ -5056,62 +5311,60 @@
     if (countMaxEl) countMaxEl.textContent = MAX_STUDENTS_PER_COMPETITION;
     if (countBadgeEl) countBadgeEl.classList.toggle('is-full', studentCount >= MAX_STUDENTS_PER_COMPETITION);
 
-    const students = Object.entries(competition.students)
-      .sort((a, b) => {
-        const aDone = a[1].completed === totalExperiments && a[1].finishTime;
-        const bDone = b[1].completed === totalExperiments && b[1].finishTime;
-        // Finished students always outrank unfinished ones...
-        if (aDone !== bDone) return aDone ? -1 : 1;
-        // ...and among finishers, fastest total time wins — this is the
-        // actual "race" ranking, not just who happened to join first.
-        if (aDone && bDone) {
-          return (a[1].finishTime - a[1].startTime) - (b[1].finishTime - b[1].startTime);
-        }
-        // Still-in-progress students: most completed first, then who
-        // started earliest as a tiebreaker (unchanged from before).
-        if (b[1].completed !== a[1].completed) return b[1].completed - a[1].completed;
-        return a[1].startTime - b[1].startTime;
-      });
+    const standings = computeStandings(competition.students, total);
 
-    if (students.length === 0) {
+    // Everyone finished → announce the winner (fastest total time) and the podium.
+    const banner = document.getElementById('teacherWinnerBanner');
+    if (banner) {
+      if (standings.allDone && standings.finished.length) {
+        const medals = ['🥇', '🥈', '🥉'];
+        banner.hidden = false;
+        banner.textContent = `🏆 ${t.cr_all_done}  ${t.cr_winner}: ${standings.finished[0].name}  ·  ` +
+          standings.finished.slice(0, 3).map((x, i) => `${medals[i]} ${x.name} ${formatDuration(studentDuration(x.r))}`).join('   ');
+      } else {
+        banner.hidden = true;
+      }
+    }
+
+    // The clock only needs to tick while someone is still working.
+    if (standings.allDone) stopTeacherTicker(); else startTeacherTicker();
+
+    if (standings.ordered.length === 0) {
       leaderboard.innerHTML = `
         <div class="leaderboard-empty">
-          ⏳ ${I18N[state.lang].msg_waiting || 'Waiting for students to join...'}
+          ⏳ ${t.msg_waiting || 'Waiting for students to join...'}
         </div>
       `;
       return;
     }
 
-    leaderboard.innerHTML = students.map((entry, idx) => {
-      const [name, data] = entry;
-      const percentage = Math.round((data.completed / totalExperiments) * 100);
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '•';
-      const isDone = data.completed === totalExperiments && data.finishTime;
-      const status = isDone
-        ? `✅ ${formatDuration(data.finishTime - data.startTime)}`
-        : '⏳';
-      
+    const now = Date.now();
+    const medals = ['🥇', '🥈', '🥉'];
+    leaderboard.innerHTML = standings.ordered.map((x, idx) => {
+      const percentage = total ? Math.round((x.r.completed / total) * 100) : 0;
+      const place = standings.finished.indexOf(x);
+      const medal = place >= 0 && place < 3 ? medals[place] : '•';
+      const dur = studentDuration(x.r, now);
+      const status = x.done ? `✅ ${formatDuration(dur)}` : (dur === null ? '⏳' : `⏱ ${formatDuration(dur)}`);
       return `
-        <div class="leaderboard-row" style="opacity: ${1 - (idx * 0.05)}">
+        <div class="leaderboard-row${x.done ? ' is-done' : ''}" style="opacity: ${Math.max(0.55, 1 - idx * 0.02)}">
           <div class="leaderboard-rank">${medal} #${idx + 1}</div>
-          <div class="leaderboard-name">${name}</div>
+          <div class="leaderboard-name">${escHtml(x.name)}</div>
           <div class="leaderboard-progress">
-            <span>${data.completed}/${totalExperiments}</span>
+            <span>${x.r.completed}/${total}</span>
             <span class="progress-bar" style="width: ${percentage}%"></span>
           </div>
           <div class="leaderboard-status">${status}</div>
         </div>
       `;
     }).join('');
-    
-    console.log(`📊 Leaderboard updated: ${students.length} students`);
   }
 
   async function handleStudentJoin() {
     console.log('👨‍🎓 Student joining competition...');
     
     const code = document.getElementById('joinCode').value.toUpperCase().trim();
-    const name = document.getElementById('studentName').value.trim();
+    const name = cleanStudentName(document.getElementById('studentName').value);
     const error = document.getElementById('joinError');
 
     // Clear previous error
@@ -5180,7 +5433,7 @@
 
     competition.code = code;
     competition.selectedExperiments = remoteData.selectedExperiments || [];
-    competition.students = remoteData.students || {};
+    competition.students = normalizeStudents(remoteData.students);
 
     // Validate that experiments exist
     if (competition.selectedExperiments.length === 0) {
@@ -5230,6 +5483,8 @@
     }
 
     saveCompetitionData(); // local cache so a page refresh remembers this student's session
+    startStudentStandingsListener();
+    { const me = normalizeStudent(competition.students[name]); if (me.startedAt && !me.finishTime) startClassTimer(); else renderClassTimer(); }
 
     // Hide experiments that are not selected
     console.log('🔍 Filtering experiments:', competition.selectedExperiments);
@@ -5266,54 +5521,45 @@
   }
 
   function handleStudentExperimentComplete(experimentId) {
-    if (!competition.studentName) {
-      console.warn('⚠️ No student name set');
+    console.log('📝 Student completing experiment:', experimentId);
+    const name = competition.studentName;
+    if (!name) {
+      console.error('❌ No student name set');
       return;
     }
-    
-    if (!competition.students[competition.studentName]) {
-      console.error('❌ Student not found:', competition.studentName);
-      return;
-    }
+    // Rebuild a complete record first: one that came back from Firebase may be missing its
+    // `experiments` list, and reading it used to throw before the result popup could appear.
+    const student = competition.students[name] = normalizeStudent(competition.students[name]);
 
-    const student = competition.students[competition.studentName];
-    
-    if (!student.experiments.includes(experimentId)) {
-      student.experiments.push(experimentId);
-      student.completed = student.experiments.filter(
-        expId => competition.selectedExperiments.includes(expId)
-      ).length;
-
-      // The moment a student finishes their LAST assigned experiment, lock
-      // in how long that took — this is what lets the leaderboard rank
-      // finished students by speed instead of just completion count.
-      // (Guarded so finishing again, or completing extra experiments
-      // beyond the assigned set, never overwrites the original time.)
-      const totalAssigned = competition.selectedExperiments.length;
-      if (student.completed === totalAssigned && !student.finishTime) {
-        student.finishTime = Date.now();
-        console.log(`🏁 Finished all ${totalAssigned} experiments in ${Math.round((student.finishTime - student.startTime) / 1000)}s`);
-      }
-
-      console.log(`✅ Experiment completed: ${experimentId}`);
-      console.log(`📊 Student progress: ${student.completed}/${competition.selectedExperiments.length}`);
-      
-      saveCompetitionData();
-
-      // Push just this student's record to the server — the teacher's
-      // live listener (on their own device) picks this up instantly.
-      if (window.chemLabCloud && window.chemLabCloud.ready && competition.code) {
-        window.chemLabCloud.saveStudent(competition.code, competition.studentName, student)
-          .then(() => console.log('✅ Progress synced to server'))
-          .catch((err) => console.error('❌ Failed to sync progress to server:', err));
-      }
-    } else {
+    if (student.experiments.includes(experimentId)) {
       console.log(`⚠️ Experiment already completed: ${experimentId}`);
+      return;
     }
+    student.experiments.push(experimentId);
+    student.completed = student.experiments.filter((id) => competition.selectedExperiments.includes(id)).length;
+    if (!student.startedAt) student.startedAt = student.startTime || Date.now();
+
+    // The moment the LAST assigned experiment is done, lock in the finishing time (once).
+    const totalAssigned = competition.selectedExperiments.length;
+    if (student.completed >= totalAssigned && !student.finishTime) {
+      student.finishTime = Date.now();
+      console.log(`🏁 Finished all ${totalAssigned} experiments in ${Math.round((student.finishTime - student.startedAt) / 1000)}s`);
+    }
+    console.log(`✅ Experiment completed: ${experimentId} — progress ${student.completed}/${totalAssigned}`);
+
+    saveCompetitionData();
+    syncStudent(name, student); // the teacher's live view picks this up
+    if (student.finishTime) stopClassTimer(); else renderClassTimer();
   }
 
   function handleEndCompetition() {
-    const confirmMsg = I18N[state.lang].msg_confirm_end || 'End this competition? This cannot be undone.';
+    const tEnd = I18N[state.lang];
+    const endStandings = computeStandings(competition.students, competition.selectedExperiments.length);
+    const podium = endStandings.finished.slice(0, 3)
+      .map((x, i) => `${['🥇', '🥈', '🥉'][i]} ${x.name} — ${formatDuration(studentDuration(x.r))}`).join('\n');
+    // Ending wipes the results, so put them in front of the teacher one last time.
+    const confirmMsg = (tEnd.msg_confirm_end || 'End this competition? This cannot be undone.') +
+      (podium ? `\n\n🏆 ${tEnd.cr_winner}:\n${podium}` : '');
     
     if (confirm(confirmMsg)) {
       console.log('🛑 Ending competition...');
@@ -5328,6 +5574,7 @@
         teacherLeaderboardUnsubscribe();
         teacherLeaderboardUnsubscribe = null;
       }
+      stopTeacherTicker();
       if (window.chemLabCloud && window.chemLabCloud.ready && finalCode) {
         window.chemLabCloud.deleteCompetition(finalCode)
           .catch((err) => console.error('❌ Failed to delete competition from server:', err));

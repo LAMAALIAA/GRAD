@@ -210,6 +210,9 @@
             </div>
           </div>
           
+          <!-- Shown once every student has finished: the winner (fastest total time) and the podium -->
+          <div class="winner-banner" id="teacherWinnerBanner" role="status" hidden></div>
+
           <div class="students-heading-row">
             <h2 data-i18n="teacher_students">Students & Results</h2>
             <span class="student-count-badge" id="studentCountBadge">
@@ -551,6 +554,12 @@
         <button class="btn btn-ghost btn-small" data-nav="experiments" data-i18n="back_btn">← Back</button>
 
         <div class="lab-toolbar-actions">
+          <!-- Class mode only: the student's own clock + progress; tap it for the ranking -->
+          <button class="class-timer" id="classTimer" type="button" hidden data-i18n-title="timer_title" title="Your time — tap for the ranking">
+            <span aria-hidden="true">⏱</span>
+            <b id="classTimerValue">0:00</b>
+            <span class="class-timer-progress" id="classProgress"></span>
+          </button>
           <button class="btn btn-ghost btn-small" id="resetBtn" data-i18n="reset_btn">↺ Reset</button>
         </div>
       </div>
@@ -716,6 +725,21 @@
   ============================================================= -->
 
   <!-- Safety instructions popup -->
+  <!-- Class mode: a student's own time and the live standings -->
+  <div class="modal-overlay" id="classResultsModal" hidden>
+    <div class="modal class-results-modal" role="dialog" aria-modal="true" aria-labelledby="classResultsTitle">
+      <button class="modal-close" data-close-modal="classResultsModal" aria-label="Close">✕</button>
+      <h2 id="classResultsTitle" data-i18n="cr_title">Your result</h2>
+      <p class="cr-label" data-i18n="cr_time">Your time</p>
+      <p class="cr-time" id="crTime">—</p>
+      <p class="cr-sub" id="crSub"></p>
+      <div class="cr-winner" id="crWinner" role="status" hidden></div>
+      <h3 class="cr-standings-title" data-i18n="cr_standings">Standings</h3>
+      <ol class="cr-list" id="crList"></ol>
+      <button class="btn btn-primary" id="crBackBtn" type="button" data-i18n="cr_back">Back to experiments</button>
+    </div>
+  </div>
+
   <!-- Account / sign-in. Everyone is a guest until they sign in; signing in upgrades the guest. -->
   <div class="modal-overlay" id="accountModal" hidden>
     <div class="modal account-modal" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
